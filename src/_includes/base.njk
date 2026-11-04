@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{% if post %}{{ post.title }} · {% endif %}{{ site.title }}</title>
+  {% if post and post.summary_plain %}
+  <meta name="description" content="{{ post.summary_plain }}">
+  <meta property="og:description" content="{{ post.summary_plain }}">
+  {% else %}
+  <meta name="description" content="{{ site.description }}">
+  <meta property="og:description" content="{{ site.description }}">
+  {% endif %}
+  {% if post %}
+  <link rel="canonical" href="{{ site.baseUrl }}/x/{{ post.status_id }}/">
+  <meta property="og:title" content="{{ post.title }}">
+  <meta property="og:url" content="{{ site.baseUrl }}/x/{{ post.status_id }}/">
+  <meta property="og:type" content="article">
+  {% if post.created_at_display %}
+  <meta property="article:published_time" content="{{ post.created_at }}">
+  {% endif %}
+  {% else %}
+  <link rel="canonical" href="{{ site.baseUrl }}/">
+  <meta property="og:title" content="{{ site.title }}">
+  <meta property="og:url" content="{{ site.baseUrl }}/">
+  <meta property="og:type" content="website">
+  {% endif %}
+  <meta property="og:locale" content="zh_CN">
+  <link rel="icon" href="{{ "/favicon.svg" | url }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ "/css/site.css" | url }}">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{{ "/" | url }}">{{ site.title }}</a>
+  </header>
+  <main>
+    {{ content | safe }}
+  </main>
+  <footer class="notice" id="notice">
+    <p>{{ site.footerNotice }}</p>
+  </footer>
+</body>
+</html>
