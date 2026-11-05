@@ -107,7 +107,7 @@ Input keys (all strings, all optional, but at least one of `tweet_url` and `stat
 | `title` | Title. If empty, the first line of the body is used |
 | `author_name` | Author display name |
 | `author_handle` | Handle, without `@` |
-| `created_at` | ISO 8601 timestamp |
+| `created_at` | ISO 8601 timestamp in UTC. The page shows that same instant as `YYYY-MM-DD HH:MM UTC` |
 | `full_text` | Original text, kept in its original language. When this is set, nothing is fetched |
 | `summary` | English AI summary. Alias of `summary_en` when `summary_en` is empty |
 | `summary_en` | English AI summary. Shown by default |

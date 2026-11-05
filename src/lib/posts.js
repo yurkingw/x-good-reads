@@ -26,14 +26,14 @@ export function normalizeTimestamp(value) {
   return date.toISOString();
 }
 
-export function formatBeijing(value) {
+export function formatUtc(value) {
   const text = normalizeTimestamp(value);
   if (!text) return "";
   const date = new Date(text);
   if (Number.isNaN(date.getTime())) return "";
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat("en-US", {
-      timeZone: "Asia/Shanghai",
+      timeZone: "UTC",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -45,7 +45,7 @@ export function formatBeijing(value) {
       .map((part) => [part.type, part.value])
   );
   const hour = parts.hour === "24" ? "00" : parts.hour;
-  return `${parts.year}-${parts.month}-${parts.day} ${hour}:${parts.minute} (Beijing time)`;
+  return `${parts.year}-${parts.month}-${parts.day} ${hour}:${parts.minute} UTC`;
 }
 
 function cleanText(value) {
@@ -115,7 +115,7 @@ function present(stored) {
   return {
     ...stored,
     page_url: `/x/${stored.status_id}/`,
-    created_at_display: formatBeijing(stored.created_at),
+    created_at_display: formatUtc(stored.created_at),
     summary_plain: (stored.summary_en || stored.summary_zh).replace(/\s+/g, " ").trim().slice(0, 180)
   };
 }

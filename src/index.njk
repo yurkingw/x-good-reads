@@ -3,7 +3,7 @@ layout: base.njk
 permalink: /
 ---
 <h1>{{ site.title }}</h1>
-<p class="lede">One X post, one page. Share the link anywhere (WeChat works).</p>
+<p class="lede">One X post, one page. Share the link anywhere.</p>
 {% if posts.length %}
 <ul class="index">
   {% for post in posts %}
@@ -13,7 +13,7 @@ permalink: /
       <span class="byline">
         {{ post.author_name or "Unknown author" }}
         {% if post.author_handle %} · @{{ post.author_handle }}{% endif %}
-        {% if post.created_at %} · <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time>{% endif %}
+        {% if post.created_at %}<span class="byline-time"> · <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time></span>{% endif %}
       </span>
     </a>
   </li>

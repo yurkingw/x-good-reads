@@ -3,12 +3,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { buildStoredPost, formatBeijing, loadPosts, pickSummaries } from "../src/lib/posts.js";
+import { buildStoredPost, formatUtc, loadPosts, pickSummaries } from "../src/lib/posts.js";
 
 const ID = "2117512471930167377";
 
-test("formats the sample instant in Beijing time", () => {
-  assert.equal(formatBeijing("2026-11-03T07:01:29.000Z"), "2026-11-03 15:01 (Beijing time)");
+test("formats an ISO instant as UTC without shifting the clock", () => {
+  assert.equal(formatUtc("2026-11-03T07:01:29.000Z"), "2026-11-03 07:01 UTC");
+  assert.equal(formatUtc("2026-01-02T00:00:00.000Z"), "2026-01-02 00:00 UTC");
+  assert.equal(formatUtc(""), "");
 });
 
 test("rejects an unquoted snowflake id and a mismatched filename", () => {
@@ -53,7 +55,8 @@ See https://example.com/already.png
   assert.match(post.full_text, /already\.png/);
   assert.equal(post.summary_en, "English summary");
   assert.equal(post.summary_zh, "");
-  assert.equal(post.created_at_display, "2026-01-02 08:00 (Beijing time)");
+  assert.equal(post.created_at, "2026-01-02T00:00:00.000Z");
+  assert.equal(post.created_at_display, "2026-01-02 00:00 UTC");
 });
 
 test("fills a missing title and original url", () => {

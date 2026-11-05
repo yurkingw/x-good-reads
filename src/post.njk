@@ -24,8 +24,7 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
         <dt>Published</dt>
         <dd>
           {% if post.created_at %}
-          <time datetime="{{ post.created_at }}">{{ post.created_at }}</time>
-          {% if post.created_at_display %}<span class="readable">{{ post.created_at_display }}</span>{% endif %}
+          <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time>
           {% else %}
           Unknown
           {% endif %}

@@ -4,5 +4,5 @@
 export const pathPrefix = "/x-good-reads/";
 export const baseUrl = "https://yurkingw.github.io/x-good-reads";
 export const siteTitle = "X Good Reads";
-export const description = "One X post, one page. Share the link anywhere (WeChat works).";
+export const description = "One X post, one page. Share the link anywhere.";
 export const footerNotice = "Original content belongs to its authors. This site is a readable archive; the source post is authoritative.";

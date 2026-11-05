@@ -5,7 +5,9 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("renderText", (value) => renderText(value));
   eleventyConfig.addPassthroughCopy({
     "src/css": "css",
-    "src/favicon.svg": "favicon.svg"
+    "src/favicon.svg": "favicon.svg",
+    "node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2": "fonts/inter-latin-wght-normal.woff2",
+    "node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2": "fonts/inter-latin-ext-wght-normal.woff2"
   });
   eleventyConfig.addWatchTarget("./content/");
 }
