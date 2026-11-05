@@ -1,0 +1,62 @@
+---
+layout: base.njk
+pagination:
+  data: posts
+  size: 1
+  alias: post
+permalink: "/x/{{ pagination.items[0].status_id }}/"
+---
+<article>
+  <h1>{{ post.title }}</h1>
+
+  <section class="summary" id="summary" lang="zh-CN" aria-labelledby="summary-heading">
+    <h2 id="summary-heading">AI 摘要</h2>
+    <p class="label-note">本段由 AI 生成，便于快速阅读，不能代替原文。</p>
+    {% if post.summary_zh %}
+    <div class="summary-body">{{ post.summary_zh | renderText | safe }}</div>
+    {% else %}
+    <p class="missing">（未提供中文摘要。请在内容文件的 summary_zh 里补上后再发布。）</p>
+    {% endif %}
+  </section>
+
+  <section class="meta" id="meta" aria-labelledby="meta-heading">
+    <h2 id="meta-heading">来源</h2>
+    <dl>
+      <div>
+        <dt>作者</dt>
+        <dd class="author-name">{{ post.author_name or "未知" }}</dd>
+      </div>
+      <div>
+        <dt>账号</dt>
+        <dd class="author-handle">{% if post.author_handle %}@{{ post.author_handle }}{% else %}未知{% endif %}</dd>
+      </div>
+      <div>
+        <dt>发布时间</dt>
+        <dd>
+          {% if post.created_at %}
+          <time datetime="{{ post.created_at }}">{{ post.created_at }}</time>
+          {% if post.created_at_display %}<span class="readable">{{ post.created_at_display }}</span>{% endif %}
+          {% else %}
+          未知
+          {% endif %}
+        </dd>
+      </div>
+      <div>
+        <dt>原帖</dt>
+        <dd><a class="original-url" href="{{ post.original_url }}">{{ post.original_url }}</a></dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="original" id="original" lang="en" aria-labelledby="original-heading">
+    <h2 id="original-heading">原文</h2>
+    <div class="original-body">{{ post.full_text | renderText | safe }}</div>
+    {% if post.images.length %}
+    <div class="images">
+      {% for image in post.images %}
+      <img src="{{ image }}" alt="原帖图片" loading="lazy">
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+</article>

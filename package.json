@@ -1,0 +1,20 @@
+{
+  "name": "x-good-reads",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "eleventy",
+    "dev": "eleventy --serve",
+    "ingest": "node scripts/ingest.js",
+    "test": "node --test test/*.js"
+  },
+  "dependencies": {
+    "@11ty/eleventy": "^3.1.8",
+    "gray-matter": "^4.0.3",
+    "linkify-it": "^6.1.0",
+    "markdown-it": "^15.0.3"
+  }
+}
