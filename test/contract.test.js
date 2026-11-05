@@ -10,6 +10,8 @@ const INPUTS = [
   "author_handle",
   "created_at",
   "full_text",
+  "summary",
+  "summary_en",
   "summary_zh"
 ];
 
@@ -43,4 +45,6 @@ test("readme documents the contract and the live urls", () => {
   assert.match(readme, /pathPrefix/);
   assert.match(readme, /GitHub Actions/);
   for (const key of INPUTS) assert.match(readme, new RegExp(`\`${key}\``));
+  assert.match(readme, /summary_en/);
+  assert.match(readme, /summary_zh/);
 });

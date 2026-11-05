@@ -3,6 +3,6 @@
 // and baseUrl to "https://your.domain" (no trailing slash).
 export const pathPrefix = "/x-good-reads/";
 export const baseUrl = "https://yurkingw.github.io/x-good-reads";
-export const siteTitle = "X 可读存档";
-export const description = "把 X 帖子收成适合在微信里阅读的静态页面。一条帖子一个地址。";
-export const footerNotice = "原文版权归原作者；本站仅作可读存档与分享；请以原帖为准。";
+export const siteTitle = "X Good Reads";
+export const description = "One X post, one page. Share the link anywhere (WeChat works).";
+export const footerNotice = "Original content belongs to its authors. This site is a readable archive; the source post is authoritative.";
