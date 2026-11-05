@@ -36,7 +36,7 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
       return index;
     });
     assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
-    assert.match(html, /<h2 id="summary-heading">Summary<\/h2>/);
+    assert.match(html, /<h2 id="summary-heading">AI summary<\/h2>/);
     assert.match(html, /AI-generated for skimming\. Not a substitute for the original\./);
     assert.match(html, /<h2 id="meta-heading">Source<\/h2>/);
     assert.match(html, /<h2 id="original-heading">Original<\/h2>/);
@@ -68,15 +68,14 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(englishSummary, /cognitive surrender/);
   assert.match(chineseSummary, /认知投降/);
   const sourceAt = sample.indexOf('<h2 id="meta-heading">Source</h2>');
-  const summaryAt = sample.indexOf('<h2 id="summary-heading">Summary</h2>');
+  const summaryAt = sample.indexOf('<h2 id="summary-heading">AI summary</h2>');
   const originalAt = sample.indexOf('<h2 id="original-heading">Original</h2>');
   assert.ok(sourceAt >= 0 && summaryAt >= 0 && originalAt >= 0);
   assert.ok(sourceAt < summaryAt && summaryAt < originalAt, "DOM order is Source, then Summary, then Original");
-  assert.match(sample, /id="summary-lang-en"[^>]*checked/);
-  assert.match(sample, /<label class="opt-en"[^>]*>EN<\/label>/);
-  assert.match(sample, /<label class="opt-zh"[^>]*>ZH<\/label>/);
-  assert.ok(sample.indexOf('id="summary-lang-zh"') < sample.indexOf('class="summary-body is-en"'));
-  assert.ok(sample.indexOf('class="summary-body is-en"') < sample.indexOf('class="summary-body is-zh"'));
+  assert.match(sample, /data-lang="en"[^>]*aria-pressed="true"/);
+  assert.match(sample, /data-lang="zh"[^>]*aria-pressed="false"[^>]*>中文<\/button>/);
+  assert.match(sample, /aria-label="Summary language"/);
+  assert.ok(sample.indexOf('class="summary-body is-en"') < sample.indexOf('id="summary-zh"'));
   assert.doesNotMatch(englishSummary, /认知投降/);
   assert.match(sample, /<time datetime="2026-11-03T07:01:29\.000Z">2026-11-03T07:01:29\.000Z<\/time>/);
   assert.match(sample, /2026-11-03 15:01 \(Beijing time\)/);
@@ -86,7 +85,7 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(original, /<h3>Offloading, deferral and surrender<\/h3>/);
   assert.match(original, /Back in the day, critical thinking/);
   assert.match(original, /Think independently/);
-  assert.doesNotMatch(sample, /<script/i);
+  assert.doesNotMatch(sample, /<script\b[^>]*\bsrc=/i);
   assert.equal(fs.existsSync(path.join(root, "_site", "css", "site.css")), true);
   assert.match(sample, /href="\/x-good-reads\/favicon\.svg"/);
   assert.equal(fs.existsSync(path.join(root, "_site", "favicon.svg")), true);
@@ -96,6 +95,8 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(indexTemplate, /Unknown author/);
   const postTemplate = fs.readFileSync(path.join(root, "src", "post.njk"), "utf8");
   assert.match(postTemplate, /No summary yet\. Add a summary in the content file, then publish\./);
+  assert.match(postTemplate, /English summary unavailable\./);
+  assert.match(postTemplate, /Chinese summary unavailable\./);
   assert.match(postTemplate, /post\.summary_en and post\.summary_zh/);
   assert.match(postTemplate, /Unknown/);
   assert.match(postTemplate, /Post image/);
@@ -110,13 +111,13 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(css, /--shadow:\s*none/);
   assert.match(css, /--measure:\s*38rem/);
   assert.match(css, /--lh-summary:\s*1\.65/);
-  assert.match(css, /--font-ui:\s*system-ui, "Segoe UI", "Helvetica Neue", Arial, sans-serif/);
+  assert.match(css, /--font-ui:\s*system-ui, "Segoe UI", "Helvetica Neue", "PingFang SC", "Noto Sans SC", Arial, sans-serif/);
   assert.match(css, /--font-en-serif:\s*"Iowan Old Style"/);
   assert.doesNotMatch(css, /border-radius:\s*1[2-9]px/);
   assert.doesNotMatch(indexTemplate, /display:\s*grid/);
-  assert.match(css, /\.summary:has\(\.show-en\) \.is-zh \{ display: none; \}/);
-  assert.match(css, /\.show-zh:checked ~ \.is-en \{ display: none; \}/);
-  assert.match(css, /\.show-zh:checked ~ \.is-zh \{ display: block; \}/);
+  assert.match(css, /\.summary:has\(\.is-en\):has\(\.is-zh\):not\(\.is-zh-on\)/);
+  assert.match(css, /\.summary\.is-zh-on \.is-en,\s*\.summary:has\(#summary-zh:target\) \.is-en \{ display: none; \}/);
+  assert.match(css, /\.summary\.is-zh-on \.is-zh,\s*\.summary:has\(#summary-zh:target\) \.is-zh \{ display: block; \}/);
   assert.deepEqual(summaryVisibility(false), { en: "block", zh: "none" });
   assert.deepEqual(summaryVisibility(true), { en: "none", zh: "block" });
 
@@ -177,12 +178,16 @@ async function assertToggleInChrome(sampleId) {
     const display = (selector) => page.locator(selector).evaluate((node) => getComputedStyle(node).display);
     assert.equal(await display(".is-en"), "block");
     assert.equal(await display(".is-zh"), "none");
+    assert.equal(await page.locator('button[data-lang="en"]').getAttribute("aria-pressed"), "true");
     assert.match(await page.locator(".is-en").innerText(), /cognitive surrender/);
-    await page.locator(".opt-zh").click();
+    await page.locator('button[data-lang="zh"]').click();
+    assert.equal(await page.locator('button[data-lang="zh"]').getAttribute("aria-pressed"), "true");
+    assert.equal(await page.locator('button[data-lang="en"]').getAttribute("aria-pressed"), "false");
     assert.equal(await display(".is-en"), "none");
     assert.equal(await display(".is-zh"), "block");
     assert.match(await page.locator(".is-zh").innerText(), /认知投降/);
-    await page.locator(".opt-en").click();
+    await page.locator('button[data-lang="en"]').click();
+    assert.equal(await page.locator('button[data-lang="en"]').getAttribute("aria-pressed"), "true");
     assert.equal(await display(".is-en"), "block");
     assert.equal(await display(".is-zh"), "none");
   } finally {

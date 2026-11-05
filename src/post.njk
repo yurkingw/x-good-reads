@@ -39,25 +39,48 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
   </section>
 
   <section class="summary" id="summary" aria-labelledby="summary-heading">
-    <h2 id="summary-heading">Summary</h2>
-    <p class="label-note">AI-generated for skimming. Not a substitute for the original.</p>
-    {% if post.summary_en or post.summary_zh %}
-      {% if post.summary_en and post.summary_zh %}
-      <input class="lang-input show-en" type="radio" name="summary-lang" id="summary-lang-en" checked>
-      <input class="lang-input show-zh" type="radio" name="summary-lang" id="summary-lang-zh">
-      <div class="lang-toggle">
-        <label class="opt-en" for="summary-lang-en">EN</label>
-        <label class="opt-zh" for="summary-lang-zh">ZH</label>
+    <div class="summary-head">
+      <h2 id="summary-heading">AI summary</h2>
+      {% if post.summary_en or post.summary_zh %}
+      <div class="lang-switch" role="group" aria-label="Summary language">
+        <button type="button" data-lang="en" aria-pressed="{{ 'true' if post.summary_en else 'false' }}"{% if not post.summary_en %} disabled{% endif %}>EN</button>
+        <span class="lang-sep" aria-hidden="true">·</span>
+        <button type="button" data-lang="zh" aria-pressed="{{ 'true' if (post.summary_zh and not post.summary_en) else 'false' }}"{% if not post.summary_zh %} disabled{% endif %}>中文</button>
       </div>
       {% endif %}
-      {% if post.summary_en %}
-      <div class="summary-body is-en" lang="en">{{ post.summary_en | renderText | safe }}</div>
-      {% endif %}
-      {% if post.summary_zh %}
-      <div class="summary-body is-zh" lang="zh-CN">{{ post.summary_zh | renderText | safe }}</div>
-      {% endif %}
-    {% else %}
+    </div>
+    <p class="label-note">AI-generated for skimming. Not a substitute for the original.</p>
+    {% if post.summary_en and not post.summary_zh %}
+    <p class="missing">Chinese summary unavailable.</p>
+    {% elif post.summary_zh and not post.summary_en %}
+    <p class="missing">English summary unavailable.</p>
+    {% elif not post.summary_en and not post.summary_zh %}
     <p class="missing">No summary yet. Add a summary in the content file, then publish.</p>
+    {% endif %}
+    {% if post.summary_en %}
+    <div class="summary-body is-en" id="summary-en" lang="en">{{ post.summary_en | renderText | safe }}</div>
+    {% endif %}
+    {% if post.summary_zh %}
+    <div class="summary-body is-zh" id="summary-zh" lang="zh-CN">{{ post.summary_zh | renderText | safe }}</div>
+    {% endif %}
+    {% if post.summary_en and post.summary_zh %}
+    <noscript><a href="#summary-zh">中文</a></noscript>
+    <script>
+      (function () {
+        var root = document.currentScript.closest(".summary");
+        var buttons = root.querySelectorAll(".lang-switch button[data-lang]");
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            if (button.disabled) return;
+            var lang = button.getAttribute("data-lang");
+            root.classList.toggle("is-zh-on", lang === "zh");
+            buttons.forEach(function (item) {
+              item.setAttribute("aria-pressed", item === button ? "true" : "false");
+            });
+          });
+        });
+      }());
+    </script>
     {% endif %}
   </section>
 
