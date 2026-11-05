@@ -240,6 +240,55 @@ function themeTokens(page) {
   });
 }
 
+function assertThemeFit(fit) {
+  assert.deepEqual(fit.labels, ["Auto", "Day", "Night"]);
+  assert.ok(fit.scrollWidth <= fit.clientWidth + 1, JSON.stringify(fit));
+  for (const key of fit.keys) {
+    assert.ok(key.left >= -0.5, JSON.stringify(key));
+    assert.ok(key.right <= fit.clientWidth + 0.5, JSON.stringify(key));
+    assert.equal(key.hit, 44, JSON.stringify(key));
+  }
+  assert.equal(fit.linkHit, 44);
+  assert.equal(fit.border, "1px");
+  if (!fit.lang.length) return;
+  for (const key of fit.lang) {
+    assert.ok(key.left >= -0.5 && key.right <= fit.clientWidth + 0.5, JSON.stringify(key));
+    assert.equal(key.hit, 44, JSON.stringify(key));
+  }
+  const themeBottom = Math.max(...fit.keys.map((key) => key.bottom));
+  const langTop = Math.min(...fit.lang.map((key) => key.top));
+  assert.ok(langTop >= themeBottom - 1, JSON.stringify(fit));
+}
+
+function readThemeFit(page) {
+  return page.evaluate(() => {
+    const box = (el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        label: el.textContent.trim(),
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        hit: parseFloat(getComputedStyle(el, "::before").height)
+      };
+    };
+    const keys = [...document.querySelectorAll(".theme-switch button")].map(box);
+    const lang = [...document.querySelectorAll(".lang-switch button")].map(box);
+    const top = document.querySelector(".top");
+    return {
+      labels: keys.map((key) => key.label),
+      keys,
+      lang,
+      linkHit: parseFloat(getComputedStyle(document.querySelector(".root-link"), "::before").height),
+      border: getComputedStyle(top).borderBottomWidth,
+      top: top.getBoundingClientRect().height,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth
+    };
+  });
+}
+
 async function assertCraftOptics(page, homeUrl, postUrl) {
   await page.evaluate(() => document.fonts.ready);
   const read = () => page.evaluate(() => {
@@ -303,6 +352,51 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.equal(narrow.h1, 28);
   assert.ok(narrow.h1 - narrow.original >= 10);
   assert.ok(Math.abs(narrow.top - 48) <= 1, `top ${narrow.top}`);
+  assertThemeFit(await readThemeFit(page));
+  const forced = await page.evaluate(() => {
+    const lock = document.querySelector(".brand-lockup");
+    lock.style.minWidth = "280px";
+    const keys = [...document.querySelectorAll(".theme-switch button")].map((el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        label: el.textContent.trim(),
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        hit: parseFloat(getComputedStyle(el, "::before").height)
+      };
+    });
+    const lang = [...document.querySelectorAll(".lang-switch button")].map((el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        label: el.textContent.trim(),
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        hit: parseFloat(getComputedStyle(el, "::before").height)
+      };
+    });
+    const night = document.querySelector('[data-theme-set="night"]').getBoundingClientRect();
+    const lockRect = lock.getBoundingClientRect();
+    const top = document.querySelector(".top");
+    const fit = {
+      labels: keys.map((key) => key.label),
+      keys,
+      lang,
+      linkHit: parseFloat(getComputedStyle(document.querySelector(".root-link"), "::before").height),
+      border: getComputedStyle(top).borderBottomWidth,
+      top: top.getBoundingClientRect().height,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth
+    };
+    lock.style.minWidth = "";
+    return { fit, wrapped: night.top >= lockRect.bottom - 1 };
+  });
+  assert.equal(forced.wrapped, true, JSON.stringify(forced));
+  assert.ok(forced.fit.top > 48 && forced.fit.top <= 96, `wrapped top ${forced.fit.top}`);
+  assertThemeFit(forced.fit);
   assert.equal(narrow.segHeight, "24px");
   assert.equal(narrow.segBg, "rgba(0, 0, 0, 0)");
   assert.equal(narrow.segRadius, "0px");
@@ -326,6 +420,13 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.equal(wide.original, 18);
   assert.equal(wide.h1, 32);
   assert.ok(wide.h1 - wide.original >= 10);
+  assert.ok(Math.abs(wide.top - 48) <= 1, `wide top ${wide.top}`);
+  const wideRow = await page.evaluate(() => {
+    const brand = document.querySelector(".brand").getBoundingClientRect();
+    const night = document.querySelector('[data-theme-set="night"]').getBoundingClientRect();
+    return Math.abs((brand.top + brand.bottom) / 2 - (night.top + night.bottom) / 2);
+  });
+  assert.ok(wideRow < 8, `theme left the brand row by ${wideRow}px`);
   for (const edge of [wide.left, wide.right]) {
     assert.ok(Math.abs(edge.top - edge.h1) <= 1, JSON.stringify(edge));
     assert.ok(Math.abs(edge.summary - edge.h1) <= 1, JSON.stringify(edge));
@@ -369,6 +470,9 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.equal(hover, "rgba(0, 0, 0, 0.03)");
 
   await page.setViewportSize({ width: 375, height: 812 });
+  const homeNarrow = await readThemeFit(page);
+  assertThemeFit(homeNarrow);
+  assert.ok(Math.abs(homeNarrow.top - 48) <= 1, `home top ${homeNarrow.top}`);
   await page.goto(postUrl);
 }
 

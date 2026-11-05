@@ -232,6 +232,7 @@ main { padding-block: var(--s-6); }
 
 .brand,
 .root-link {
+  position: relative;
   color: var(--muted);
   font-size: var(--t5-size);
   font-weight: var(--t5-weight);
@@ -239,6 +240,17 @@ main { padding-block: var(--s-6); }
   letter-spacing: var(--t5-track);
   text-decoration: none;
   white-space: nowrap;
+}
+
+.brand::before,
+.root-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
 }
 
 .brand:hover,
@@ -654,6 +666,22 @@ main { padding-block: var(--s-6); }
 
 @media (max-width: 380px) {
   :root { --pad-x: var(--s-3); }
+
+  .top {
+    height: auto;
+    min-height: var(--s-7);
+    overflow: visible;
+  }
+
+  .top-inner {
+    flex-wrap: wrap;
+    row-gap: var(--s-2);
+  }
+
+  .brand-lockup,
+  .top .theme-switch {
+    flex-shrink: 0;
+  }
 
   .back-to-top {
     right: calc(var(--s-3) + env(safe-area-inset-right, 0px));
