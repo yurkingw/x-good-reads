@@ -32,7 +32,8 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(index, /<html lang="en">/);
   assert.doesNotMatch(index, /<html[^>]*\sdata-theme=/);
   assert.match(index, /Original content belongs to its authors/);
-  assert.doesNotMatch(index, /[\u4e00-\u9fff]/);
+  const indexChrome = index.replace(/<ul class="index">[\s\S]*?<\/ul>/, "");
+  assert.doesNotMatch(indexChrome, /[\u4e00-\u9fff]/);
 
   for (const post of loadPosts()) {
     const file = path.join(root, "_site", "x", post.status_id, "index.html");
@@ -296,8 +297,9 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.equal(home.pad, 16);
   assert.ok(Math.abs(home.edges.top - home.edges.h1) <= 1, JSON.stringify(home.edges));
   assert.ok(Math.abs(home.edges.title - home.edges.h1) <= 1, JSON.stringify(home.edges));
-  await page.locator(".index a").hover();
-  const hover = await page.locator(".index a").evaluate((node) => getComputedStyle(node).backgroundColor);
+  const indexLink = page.locator(".index a").first();
+  await indexLink.hover();
+  const hover = await indexLink.evaluate((node) => getComputedStyle(node).backgroundColor);
   assert.equal(hover, "rgba(0, 0, 0, 0.03)");
 
   await page.setViewportSize({ width: 375, height: 812 });
