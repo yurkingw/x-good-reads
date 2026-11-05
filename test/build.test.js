@@ -25,6 +25,8 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(index, /One X post, one page\. Share the link anywhere\./);
   assert.doesNotMatch(index, /Share the link anywhere \(/);
   assert.match(index, /2026-11-03 07:01 UTC/);
+  assert.match(index, /<a class="root-link" href="https:\/\/yurkingw\.github\.io\/">Home<\/a>/);
+  assert.match(index, /<a class="brand" href="\/x-good-reads\/">X Good Reads<\/a>/);
   assert.match(index, /aria-label="Color theme"/);
   assert.match(index, /<button type="button" class="back-to-top" aria-label="Back to top" hidden/);
   assert.match(index, /data-theme-set="system"[^>]*aria-pressed="true"[^>]*>Auto<\/button>/);
@@ -66,6 +68,8 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
     assert.match(html, />Open on X<\/a>/);
     assert.ok(html.includes(footerNotice));
     assert.ok(html.includes(`href="${post.original_url}"`));
+    assert.match(html, /<a class="root-link" href="https:\/\/yurkingw\.github\.io\/">Home<\/a>/);
+    assert.match(html, /<a class="brand" href="\/x-good-reads\/">X Good Reads<\/a>/);
     assert.match(html, /href="\/x-good-reads\/css\/site\.css"/);
     const escaped = (value) => value
       .replaceAll("&", "&amp;")

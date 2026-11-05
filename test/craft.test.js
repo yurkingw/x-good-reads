@@ -141,6 +141,26 @@ test("day and night tokens move together", () => {
   assert.match(ruleBody(css, ".is-post .top-inner,"), /max-width:\s*var\(--measure\)/);
 });
 
+test("shared header links home and posts back to the root site", () => {
+  const header = base.slice(base.indexOf('<header class="top">'), base.indexOf("</header>"));
+  assert.match(header, /<a class="root-link" href="https:\/\/yurkingw\.github\.io\/">Home<\/a>/);
+  assert.match(header, /<a class="brand" href="\{\{ "\/" \| url \}\}">\{\{ site\.title \}\}<\/a>/);
+  assert.doesNotMatch(header, /href="\{\{ "\/" \| url \}\}"[^>]*>Home</);
+  assert.doesNotMatch(index, /yurkingw\.github\.io\/"/);
+  assert.doesNotMatch(post, /yurkingw\.github\.io\/"/);
+  const link = ruleBody(css, ".root-link");
+  assert.match(link, /color:\s*var\(--muted\)/);
+  assert.match(link, /font-size:\s*var\(--t5-size\)/);
+  assert.match(link, /text-decoration:\s*none/);
+  assert.match(link, /white-space:\s*nowrap/);
+  assert.doesNotMatch(link, /display:\s*none|visibility:\s*hidden|opacity:\s*0/);
+  const lockup = ruleBody(css, ".brand-lockup");
+  assert.match(lockup, /display:\s*flex/);
+  assert.match(lockup, /align-items:\s*baseline/);
+  assert.match(lockup, /gap:\s*var\(--s-2\)/);
+  assert.match(ruleBody(css, ".root-link:hover,"), /color:\s*var\(--ink\)/);
+});
+
 test("theme and language share one segmented control", () => {
   assert.match(base, /class="seg theme-switch"/);
   assert.match(base, /class="seg-gap" aria-hidden="true">·<\/span>/);
