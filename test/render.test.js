@@ -14,6 +14,13 @@ test("renders markdown headings and images", () => {
   assert.match(html, /<img[^>]+src="https:\/\/example\.com\/a\.png"/);
 });
 
+test("keeps external page urls as links", () => {
+  const html = renderText("Read https://example.com/story before the clip");
+  assert.match(html, /href="https:\/\/example\.com\/story"/);
+  assert.match(html, /rel="noreferrer noopener"/);
+  assert.doesNotMatch(html, /<video\b/);
+});
+
 test("escapes raw html", () => {
   const html = renderText("<script>alert(1)</script>");
   assert.doesNotMatch(html, /<script>/);

@@ -22,6 +22,7 @@ test("ingest workflow exposes the bot contract and dispatches Pages", () => {
     assert.match(ingest, new RegExp(`^ {6}${key}:$`, "m"), key);
   }
   assert.match(ingest, /gh workflow run pages\.yml --ref main/);
+  assert.match(ingest, /git add content\/x media\/x/);
   assert.doesNotMatch(ingest, /vercel|netlify|cloudflare/i);
 });
 
@@ -47,4 +48,16 @@ test("readme documents the contract and the live urls", () => {
   for (const key of INPUTS) assert.match(readme, new RegExp(`\`${key}\``));
   assert.match(readme, /summary_en/);
   assert.match(readme, /summary_zh/);
+  assert.match(readme, /media\/x\/<status_id>\//);
+  assert.match(readme, /addPassthroughCopy/);
+  assert.match(readme, /"videos"/);
+  assert.match(readme, /animated GIFs/);
+  assert.match(readme, /noreferrer noopener/);
+  assert.match(readme, /25MB/);
+  assert.match(readme, /50MB/);
+  assert.match(readme, /95MB/);
+  assert.match(readme, /Git LFS/);
+  assert.match(readme, /hotlink/);
+  assert.match(readme, /does not backfill/);
+  assert.match(readme, /2117762468177183064/);
 });

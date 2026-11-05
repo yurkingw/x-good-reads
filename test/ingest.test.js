@@ -53,6 +53,8 @@ test("does not fetch when full_text is provided", async () => {
   assert.equal(saved.summary_en, "This is the summary");
   assert.equal(saved.summary_zh, "这是中文摘要");
   assert.equal(saved.summary, undefined);
+  assert.deepEqual(saved.images, []);
+  assert.deepEqual(saved.videos, []);
   assert.match(saved.full_text, /Hello from the caller/);
 });
 
@@ -68,12 +70,15 @@ test("fetch failure writes nothing", async () => {
   assert.equal(fs.readdirSync(dir).length, 0);
 });
 
-test("uses the second mirror when the first one fails", async () => {
+test("uses the second mirror when the first one fails and hosts media locally", async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-mirror-"));
+  const mediaDir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-media-"));
   const seen = [];
+  const downloaded = [];
   const result = await runIngest({
     env: { TWEET_URL: `https://x.com/addyosmani/status/${ID}`, SUMMARY_ZH: "只有中文" },
     contentDir: dir,
+    mediaDir,
     fetchImpl: async (url) => {
       seen.push(url);
       if (url.includes("fxtwitter")) return jsonResponse({ tweet: null }, 404);
@@ -88,16 +93,131 @@ test("uses the second mirror when the first one fails", async () => {
           }
         }
       });
+    },
+    downloadImpl: async (url) => {
+      downloaded.push(url);
+      if (url.endsWith(".png")) return { bytes: Buffer.from("png"), contentType: "image/png" };
+      if (url.endsWith(".mp4")) return { bytes: Buffer.from("mp4"), contentType: "video/mp4" };
+      throw new Error(`unexpected ${url}`);
     }
   });
   assert.equal(seen.length, 2);
+  assert.deepEqual(downloaded.sort(), ["https://example.com/p.png", "https://example.com/v.mp4"]);
   const saved = JSON.parse(fs.readFileSync(result.file, "utf8"));
   assert.equal(saved.summary_en, "");
   assert.equal(saved.summary_zh, "只有中文");
   assert.equal(saved.full_text, "Fetched body");
   assert.equal(saved.author_handle, "addyosmani");
   assert.equal(saved.created_at, "2026-11-03T07:01:29.000Z");
-  assert.deepEqual(saved.images, ["https://example.com/p.png"]);
+  assert.deepEqual(saved.images, [`/media/x/${ID}/image-1.png`]);
+  assert.deepEqual(saved.videos, [{
+    src: `/media/x/${ID}/video.mp4`,
+    type: "video/mp4"
+  }]);
+  assert.equal(fs.readFileSync(path.join(mediaDir, ID, "video.mp4"), "utf8"), "mp4");
+  assert.equal(fs.readFileSync(path.join(mediaDir, ID, "image-1.png"), "utf8"), "png");
+  assert.doesNotMatch(JSON.stringify(saved), /example\.com|twimg\.com/);
+});
+
+test("pickFetchedPost prefers an mp4 over a playlist and keeps the thumbnail separate", () => {
+  const post = pickFetchedPost({
+    tweet: {
+      text: "hello",
+      media: {
+        photos: [{ type: "photo", url: "https://pbs.twimg.com/media/a.jpg" }],
+        videos: [{
+          type: "video",
+          url: "https://video.twimg.com/amplify_video/playlist.m3u8",
+          thumbnail_url: "https://pbs.twimg.com/amplify_video_thumb/a.jpg",
+          formats: [
+            { url: "https://video.twimg.com/amplify_video/low.mp4", bitrate: 256000 },
+            { url: "https://video.twimg.com/amplify_video/high.mp4", bitrate: 832000 }
+          ]
+        }]
+      },
+      media_extended: [
+        { type: "gif", url: "https://video.twimg.com/tweet_video/g.mp4", thumbnail_url: "https://pbs.twimg.com/tweet_video_thumb/g.jpg" }
+      ]
+    }
+  });
+  assert.deepEqual(post.media, [
+    { kind: "image", url: "https://pbs.twimg.com/media/a.jpg", posterUrl: "" },
+    {
+      kind: "video",
+      url: "https://video.twimg.com/amplify_video/high.mp4",
+      posterUrl: "https://pbs.twimg.com/amplify_video_thumb/a.jpg"
+    },
+    {
+      kind: "gif",
+      url: "https://video.twimg.com/tweet_video/g.mp4",
+      posterUrl: "https://pbs.twimg.com/tweet_video_thumb/g.jpg"
+    }
+  ]);
+});
+
+test("media download failure does not write a remote thumbnail as success", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-media-fail-"));
+  const mediaDir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-media-fail-files-"));
+  await assert.rejects(() => runIngest({
+    env: { STATUS_ID: ID },
+    contentDir: dir,
+    mediaDir,
+    fetchImpl: async () => jsonResponse({
+      tweet: {
+        text: "Fetched body",
+        media: {
+          videos: [{
+            type: "video",
+            url: "https://video.twimg.com/amplify_video/x.mp4",
+            thumbnail_url: "https://pbs.twimg.com/amplify_video_thumb/x.jpg"
+          }]
+        }
+      }
+    }),
+    downloadImpl: async () => {
+      throw new Error("cdn blocked");
+    }
+  }), /without writing a content file/);
+  assert.equal(fs.readdirSync(dir).length, 0);
+  assert.equal(fs.existsSync(path.join(mediaDir, ID)), false);
+});
+
+test("rejects an HTML payload or a file over 95MB instead of archiving it", async () => {
+  const cases = [
+    {
+      name: "html",
+      payload: { bytes: Buffer.from("<html>login</html>"), contentType: "text/html" },
+      pattern: /content-type|html/i
+    },
+    {
+      name: "oversize",
+      payload: { bytes: Buffer.alloc(95 * 1024 * 1024 + 1), contentType: "video/mp4" },
+      pattern: /95MB/
+    }
+  ];
+  for (const item of cases) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), `xgr-${item.name}-`));
+    const mediaDir = fs.mkdtempSync(path.join(os.tmpdir(), `xgr-${item.name}-media-`));
+    await assert.rejects(() => runIngest({
+      env: { STATUS_ID: ID },
+      contentDir: dir,
+      mediaDir,
+      fetchImpl: async () => jsonResponse({
+        tweet: {
+          text: "Fetched body",
+          media: {
+            videos: [{
+              type: "video",
+              url: "https://video.twimg.com/amplify_video/x.mp4",
+              thumbnail_url: "https://pbs.twimg.com/amplify_video_thumb/x.jpg"
+            }]
+          }
+        }
+      }),
+      downloadImpl: async () => item.payload
+    }), item.pattern);
+    assert.equal(fs.readdirSync(dir).length, 0, item.name);
+  }
 });
 
 test("pickFetchedPost prefers article text", () => {

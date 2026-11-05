@@ -40,7 +40,14 @@ A `status_id` past JavaScript's safe integer range must be a string in JSON.
   "original_url": "https://x.com/addyosmani/status/2117512471930167377",
   "summary_en": "English AI summary. It may be empty; the page will say it is not available yet.",
   "summary_zh": "Chinese AI summary. Optional. The page can switch to it.",
-  "images": ["https://example.com/photo.jpg"],
+  "images": ["/media/x/2117512471930167377/photo.jpg"],
+  "videos": [
+    {
+      "src": "/media/x/2117512471930167377/video.mp4",
+      "poster": "/media/x/2117512471930167377/poster.jpg",
+      "type": "video/mp4"
+    }
+  ],
   "full_text": "Original text. Keep the line breaks.\n\nSecond paragraph."
 }
 ```
@@ -64,7 +71,19 @@ summary_zh: |
 Original text
 ```
 
-Do not store both `.json` and `.md` for the same id. The original text is rendered as Markdown: line breaks are kept, URLs become links, and images are shown. HTML in the original text is escaped. `https` images listed in `images` are appended after the body. Image URLs that come from X may fail to load or may expire.
+Do not store both `.json` and `.md` for the same id. The original text is rendered as Markdown: line breaks are kept, URLs become links, and images are shown. HTML in the original text is escaped. `images` and `videos` are rendered after the original text.
+
+## Hosted media
+
+Images, animated GIFs, and videos belong in this repository. Do not leave an X CDN hotlink (`pbs.twimg.com`, `video.twimg.com`, or any other `twimg.com` host) as the only copy.
+
+- Hosting root: `media/x/<status_id>/` (for example `media/x/2117762468177183064/video.mp4` and `poster.jpg`). Eleventy publishes that directory with `addPassthroughCopy`. Store root-relative paths such as `/media/x/<status_id>/video.mp4` in JSON, without `pathPrefix`. The page template adds `pathPrefix`, so the project site serves `https://yurkingw.github.io/x-good-reads/media/x/<status_id>/<file>`.
+- `images` stays a string array. Prefer a site path. An `https` URL is still allowed when the file is not on an X CDN.
+- `"videos"` is an array of `{ "src", "poster"?, "type"? }`. `src` and `poster` use the same path rules as `images`. The original section renders `<video controls playsinline preload="metadata">` with a `<source>`. This site does not load a third-party player.
+- External page URLs in the post text stay links (`rel="noreferrer noopener"`). The archive does not mirror those pages. It only stores image, GIF, and video files.
+- Ingest, when it has to fetch the post, downloads images, animated GIFs, and videos into `media/x/<status_id>/` and rewrites `images` and `videos` to those site paths. If a download fails, ingest stops without writing a content file. A remote thumbnail is not a successful archive. Passing `full_text` still skips the fetch; put hosted files in `media/x/<status_id>/` yourself and point JSON at them. The workflow commits both `content/x` and `media/x`.
+- Size: prefer each file under 25MB. A file over 50MB must be called out in the pull request. Do not commit a file over 95MB. The video on `2117762468177183064` is about 9.6MB and does not need Git LFS.
+- The footer already says original content belongs to its authors. Files under `media/` keep the readable archive working when an X CDN hotlink disappears. This archive does not backfill older posts that have no media. A post that already points at X CDN media, including `2117762468177183064`, has to be hosted here.
 
 Store the English summary in `summary_en` and the Chinese summary in `summary_zh`. The page shows English first. A lone `summary` is treated as English. `full_text` stays in the post's original language. If only one summary language is present, that text is shown and the language control is omitted.
 
@@ -72,9 +91,9 @@ Store the English summary in `summary_en` and the Chinese summary in `summary_zh
 
 On the Actions page, choose the **ingest** workflow, select the **main** branch, fill in the inputs, and run it. You can also call the API; see the next section.
 
-When `full_text` is set: the workflow writes `content/x/<status_id>.json`, and after tests pass it commits that file to `main` and starts `pages` to publish. No local browser is required.
+When `full_text` is set: the workflow writes `content/x/<status_id>.json`, and after tests pass it commits `content/x` and `media/x` to `main` and starts `pages` to publish. No local browser is required. Put image, GIF, and video files under `media/x/<status_id>/` yourself in this mode.
 
-When only `tweet_url` or `status_id` is set: it tries `api.fxtwitter.com`, then `api.vxtwitter.com`. If a body comes back, it is archived. If the request is blocked or there is no body, the workflow fails and does **not** write a partial file. X articles often come back as a short link only; for those posts the caller must pass `full_text`. Pass `summary_en` and `summary_zh` at the same time when you can. This repository's Action does not call a summary API.
+When only `tweet_url` or `status_id` is set: it tries `api.fxtwitter.com`, then `api.vxtwitter.com`. If a body comes back, it is archived and its images, GIFs, and videos are downloaded into `media/x/<status_id>/`. If the request is blocked, there is no body, or a media download fails, the workflow fails and does **not** write a partial file. A remote thumbnail is not a successful archive. X articles often come back as a short link only; for those posts the caller must pass `full_text`. Pass `summary_en` and `summary_zh` at the same time when you can. This repository's Action does not call a summary API.
 
 If the body is very long and the dispatch API rejects the parameters, add the file by hand instead. A push from the default `GITHUB_TOKEN` does not trigger `on: push` again, so after a successful `ingest` the workflow dispatches `pages` once. Do not remove that step, or posts written by the bot will not show up on Pages.
 

@@ -54,7 +54,7 @@ on:
         default: ""
         type: string
 
-# contents: write — push content/x/<id>.json to main.
+# contents: write — push content/x/<id>.json and media/x/<id>/ to main.
 # actions: write — dispatch pages.yml after that push.
 # A push from the default GITHUB_TOKEN does not trigger on.push again, so pages must be started here.
 permissions:
@@ -106,7 +106,7 @@ jobs:
       - name: Commit archive
         id: commit
         run: |
-          git add content/x
+          git add content/x media/x
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No content changes."
