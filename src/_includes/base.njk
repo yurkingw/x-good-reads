@@ -40,15 +40,15 @@
   <link rel="icon" href="{{ "/favicon.svg" | url }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ "/css/site.css" | url }}">
 </head>
-<body>
+<body{% if post %} class="is-post"{% else %} class="is-home"{% endif %}>
   <header class="top">
     <div class="top-inner">
       <a class="brand" href="{{ "/" | url }}">{{ site.title }}</a>
-      <div class="theme-switch" role="group" aria-label="Color theme">
+      <div class="seg theme-switch" role="group" aria-label="Color theme">
         <button type="button" data-theme-set="system" aria-pressed="true">Auto</button>
-        <span aria-hidden="true">·</span>
+        <span class="seg-gap" aria-hidden="true">·</span>
         <button type="button" data-theme-set="day" aria-pressed="false">Day</button>
-        <span aria-hidden="true">·</span>
+        <span class="seg-gap" aria-hidden="true">·</span>
         <button type="button" data-theme-set="night" aria-pressed="false">Night</button>
       </div>
     </div>

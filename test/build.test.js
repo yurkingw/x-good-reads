@@ -115,26 +115,31 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   const css = fs.readFileSync(path.join(root, "src", "css", "site.css"), "utf8");
   assert.match(css, /--bg:\s*#ffffff/);
   assert.match(css, /--surface:\s*#fafafa/);
-  assert.match(css, /--surface-soft:\s*#f5f5f5/);
-  assert.match(css, /--ink:\s*#000000/);
-  assert.match(css, /--ink-soft:\s*#1f1f1f/);
-  assert.match(css, /--muted:\s*#6e6e6e/);
-  assert.match(css, /--line:\s*#e5e5e5/);
-  assert.match(css, /--accent:\s*#000000/);
-  assert.match(css, /--accent-tint:\s*#f5f5f5/);
+  assert.match(css, /--surface-soft:\s*#f7f7f7/);
+  assert.match(css, /--ink:\s*#0a0a0a/);
+  assert.match(css, /--ink-soft:\s*#2e2e2e/);
+  assert.match(css, /--muted:\s*#6b6b6b/);
+  assert.match(css, /--line:\s*#ebebeb/);
+  assert.match(css, /--accent:\s*#0a0a0a/);
+  assert.match(css, /--hover-tint:\s*rgba\(0,0,0,0\.03\)/);
   assert.match(css, /--bg:\s*#0d0d0d/);
-  assert.match(css, /--surface:\s*#161616/);
+  assert.match(css, /--surface:\s*#141414/);
   assert.match(css, /--ink:\s*#f5f5f5/);
+  assert.match(css, /--muted:\s*#9a9a9a/);
+  assert.match(css, /--line:\s*#2a2a2a/);
+  assert.match(css, /--hover-tint:\s*rgba\(255,255,255,0\.04\)/);
   assert.match(css, /--accent:\s*#f5f5f5/);
   assert.match(css, /\[data-theme="night"\]/);
   assert.match(css, /prefers-color-scheme:\s*dark/);
   assert.match(css, /:root:not\(\[data-theme="day"\]\):not\(\[data-theme="night"\]\)/);
-  assert.match(css, /--radius-md:\s*8px/);
+  assert.match(css, /--radius-sm:\s*4px/);
+  assert.match(css, /--radius-md:\s*6px/);
   assert.match(css, /--shadow:\s*none/);
-  assert.match(css, /--measure:\s*40rem/);
-  assert.match(css, /--lh-body:\s*1\.65/);
-  assert.match(css, /--lh-summary:\s*1\.55/);
-  assert.match(css, /--track-display:\s*-0\.02em/);
+  assert.match(css, /--measure:\s*36rem/);
+  assert.match(css, /--measure-index:\s*40rem/);
+  assert.match(css, /--t3-lh:\s*1\.7/);
+  assert.match(css, /--t4-lh:\s*1\.55/);
+  assert.match(css, /--t1-track:\s*-0\.025em/);
   assert.match(css, /--font-ui:\s*"Inter", system-ui, -apple-system, "Segoe UI", "Helvetica Neue",\s*"PingFang SC", "Noto Sans SC", Arial, sans-serif/);
   assert.match(css, /font-family:\s*"Inter"/);
   assert.doesNotMatch(css, /#f4f1ea|#fbfaf7|#0c5c3a|#e8f2ec|#1a1714/);
@@ -157,6 +162,146 @@ function bodyBackground(page) {
 async function expectBackground(page, color) {
   await page.waitForFunction((expected) => getComputedStyle(document.body).backgroundColor === expected, color);
   assert.equal(await bodyBackground(page), color);
+}
+
+function themeTokens(page) {
+  return page.evaluate(() => {
+    const style = getComputedStyle(document.documentElement);
+    return Object.fromEntries(
+      ["--bg", "--surface", "--muted", "--line", "--hover-tint", "--ink"].map((key) => [key, style.getPropertyValue(key).trim()])
+    );
+  });
+}
+
+async function assertCraftOptics(page, homeUrl, postUrl) {
+  await page.evaluate(() => document.fonts.ready);
+  const read = () => page.evaluate(() => {
+    const cs = (sel) => getComputedStyle(document.querySelector(sel));
+    const contentLeft = (sel) => {
+      const el = document.querySelector(sel);
+      const rect = el.getBoundingClientRect();
+      return rect.left + parseFloat(cs(sel).paddingLeft);
+    };
+    const contentRight = (sel) => {
+      const el = document.querySelector(sel);
+      const rect = el.getBoundingClientRect();
+      return rect.right - parseFloat(getComputedStyle(el).paddingRight);
+    };
+    const summary = cs(".summary-body");
+    const original = cs(".original-body");
+    const pressed = document.querySelector('.theme-switch button[aria-pressed="true"]');
+    const pressedStyle = getComputedStyle(pressed);
+    return {
+      root: parseFloat(getComputedStyle(document.documentElement).fontSize),
+      summary: parseFloat(summary.fontSize),
+      original: parseFloat(original.fontSize),
+      summaryWeight: summary.fontWeight,
+      originalWeight: original.fontWeight,
+      summaryLh: summary.lineHeight,
+      originalLh: original.lineHeight,
+      h1: parseFloat(cs("h1").fontSize),
+      top: document.querySelector(".top").getBoundingClientRect().height,
+      segHeight: pressedStyle.height,
+      segBg: pressedStyle.backgroundColor,
+      segRadius: pressedStyle.borderRadius,
+      segWeight: pressedStyle.fontWeight,
+      segBorder: pressedStyle.borderBottomWidth,
+      segFont: pressedStyle.fontSize,
+      hit: getComputedStyle(pressed, "::before").height,
+      left: {
+        top: contentLeft(".top-inner"),
+        h1: contentLeft("h1"),
+        summary: contentLeft(".summary-body"),
+        original: contentLeft(".original-body")
+      },
+      right: {
+        top: contentRight(".top-inner"),
+        h1: contentRight("h1"),
+        summary: contentRight(".summary-body"),
+        original: contentRight(".original-body")
+      },
+      metaTop: parseFloat(cs(".meta").marginTop),
+      summaryPad: parseFloat(cs(".summary").paddingTop),
+      originalGap: parseFloat(cs(".original").marginTop)
+    };
+  });
+
+  const narrow = await read();
+  assert.equal(narrow.root, 16);
+  assert.equal(narrow.summary, 15);
+  assert.equal(narrow.original, 17);
+  assert.ok(narrow.original - narrow.summary >= 2);
+  assert.notEqual(narrow.summaryWeight, narrow.originalWeight);
+  assert.notEqual(narrow.summaryLh, narrow.originalLh);
+  assert.equal(narrow.h1, 28);
+  assert.ok(narrow.h1 - narrow.original >= 10);
+  assert.ok(Math.abs(narrow.top - 48) <= 1, `top ${narrow.top}`);
+  assert.equal(narrow.segHeight, "24px");
+  assert.equal(narrow.segBg, "rgba(0, 0, 0, 0)");
+  assert.equal(narrow.segRadius, "0px");
+  assert.equal(narrow.segWeight, "600");
+  assert.equal(narrow.segBorder, "1px");
+  assert.equal(narrow.segFont, "12px");
+  assert.equal(narrow.hit, "44px");
+  assert.equal(narrow.metaTop, 12);
+  assert.equal(narrow.summaryPad, 24);
+  assert.equal(narrow.originalGap, 32);
+  for (const edge of [narrow.left, narrow.right]) {
+    assert.ok(Math.abs(edge.top - edge.h1) <= 1, JSON.stringify(edge));
+    assert.ok(Math.abs(edge.summary - edge.h1) <= 1, JSON.stringify(edge));
+    assert.ok(Math.abs(edge.original - edge.h1) <= 1, JSON.stringify(edge));
+  }
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const wide = await read();
+  assert.equal(wide.root, 16);
+  assert.equal(wide.summary, 15);
+  assert.equal(wide.original, 18);
+  assert.equal(wide.h1, 32);
+  assert.ok(wide.h1 - wide.original >= 10);
+  for (const edge of [wide.left, wide.right]) {
+    assert.ok(Math.abs(edge.top - edge.h1) <= 1, JSON.stringify(edge));
+    assert.ok(Math.abs(edge.summary - edge.h1) <= 1, JSON.stringify(edge));
+    assert.ok(Math.abs(edge.original - edge.h1) <= 1, JSON.stringify(edge));
+  }
+
+  await page.goto(homeUrl);
+  await page.waitForSelector(".index");
+  const home = await page.evaluate(() => {
+    const h1 = getComputedStyle(document.querySelector("h1"));
+    const title = getComputedStyle(document.querySelector(".index-title"));
+    const byline = getComputedStyle(document.querySelector(".byline"));
+    const left = (sel) => {
+      const el = document.querySelector(sel);
+      return el.getBoundingClientRect().left + parseFloat(getComputedStyle(el).paddingLeft);
+    };
+    return {
+      h1: parseFloat(h1.fontSize),
+      title: parseFloat(title.fontSize),
+      titleWeight: title.fontWeight,
+      byline: parseFloat(byline.fontSize),
+      bylineColor: byline.color,
+      titleColor: title.color,
+      list: getComputedStyle(document.querySelector(".index")).listStyleType,
+      pad: parseFloat(getComputedStyle(document.querySelector(".index a")).paddingTop),
+      edges: { top: left(".top-inner"), h1: left("h1"), title: left(".index-title") }
+    };
+  });
+  assert.equal(home.h1, 24);
+  assert.equal(home.title, 14);
+  assert.equal(home.titleWeight, "500");
+  assert.equal(home.byline, 12);
+  assert.notEqual(home.bylineColor, home.titleColor);
+  assert.equal(home.list, "none");
+  assert.equal(home.pad, 16);
+  assert.ok(Math.abs(home.edges.top - home.edges.h1) <= 1, JSON.stringify(home.edges));
+  assert.ok(Math.abs(home.edges.title - home.edges.h1) <= 1, JSON.stringify(home.edges));
+  await page.locator(".index a").hover();
+  const hover = await page.locator(".index a").evaluate((node) => getComputedStyle(node).backgroundColor);
+  assert.equal(hover, "rgba(0, 0, 0, 0.03)");
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(postUrl);
 }
 
 function summaryVisibility(zhChecked) {
@@ -209,7 +354,11 @@ async function assertToggleInChrome(sampleId) {
   try {
     const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
     const { port } = server.address();
-    await page.goto(`http://127.0.0.1:${port}/x-good-reads/x/${sampleId}/`);
+    const postUrl = `http://127.0.0.1:${port}/x-good-reads/x/${sampleId}/`;
+    const homeUrl = `http://127.0.0.1:${port}/x-good-reads/`;
+    await page.goto(postUrl);
+    await page.emulateMedia({ colorScheme: "light" });
+    await assertCraftOptics(page, homeUrl, postUrl);
     const display = (selector) => page.locator(selector).evaluate((node) => getComputedStyle(node).display);
     assert.equal(await display(".is-en"), "block");
     assert.equal(await display(".is-zh"), "none");
@@ -221,6 +370,18 @@ async function assertToggleInChrome(sampleId) {
     assert.equal(await display(".is-en"), "none");
     assert.equal(await display(".is-zh"), "block");
     assert.match(await page.locator(".is-zh").innerText(), /认知投降/);
+    const zhType = await page.evaluate(() => {
+      const summary = getComputedStyle(document.querySelector(".summary-body.is-zh"));
+      const original = getComputedStyle(document.querySelector(".original-body"));
+      return {
+        summary: parseFloat(summary.fontSize),
+        original: parseFloat(original.fontSize),
+        summaryWeight: summary.fontWeight,
+        originalWeight: original.fontWeight
+      };
+    });
+    assert.ok(zhType.original - zhType.summary >= 2);
+    assert.notEqual(zhType.summaryWeight, zhType.originalWeight);
     await page.locator('button[data-lang="en"]').click();
     assert.equal(await page.locator('button[data-lang="en"]').getAttribute("aria-pressed"), "true");
     assert.equal(await display(".is-en"), "block");
@@ -240,6 +401,14 @@ async function assertToggleInChrome(sampleId) {
     assert.equal(await page.locator('[data-theme-set="day"]').getAttribute("aria-pressed"), "true");
     assert.equal(await page.evaluate(() => localStorage.getItem("xgr-theme")), "day");
     await expectBackground(page, "rgb(255, 255, 255)");
+    assert.deepEqual(await themeTokens(page), {
+      "--bg": "#ffffff",
+      "--surface": "#fafafa",
+      "--muted": "#6b6b6b",
+      "--line": "#ebebeb",
+      "--hover-tint": "rgba(0,0,0,0.03)",
+      "--ink": "#0a0a0a"
+    });
     await page.reload();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "day");
     assert.equal(await page.locator('[data-theme-set="day"]').getAttribute("aria-pressed"), "true");
@@ -249,6 +418,14 @@ async function assertToggleInChrome(sampleId) {
     assert.equal(await page.locator("html").getAttribute("data-theme"), "night");
     assert.equal(await page.evaluate(() => localStorage.getItem("xgr-theme")), "night");
     await expectBackground(page, "rgb(13, 13, 13)");
+    assert.deepEqual(await themeTokens(page), {
+      "--bg": "#0d0d0d",
+      "--surface": "#141414",
+      "--muted": "#9a9a9a",
+      "--line": "#2a2a2a",
+      "--hover-tint": "rgba(255,255,255,0.04)",
+      "--ink": "#f5f5f5"
+    });
     await page.reload();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "night");
     assert.equal(await page.locator('[data-theme-set="night"]').getAttribute("aria-pressed"), "true");
