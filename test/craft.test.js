@@ -184,6 +184,14 @@ test("theme and language share one segmented control", () => {
   assert.match(on, /border-bottom-color:\s*var\(--ink\)/);
   assert.match(ruleBody(css, ".top"), /height:\s*var\(--s-7\)/);
   assert.match(ruleBody(css, ".top"), /border-bottom:\s*1px solid var\(--line\)/);
+  assert.doesNotMatch(ruleBody(css, ".top"), /overflow:\s*hidden/);
+  assert.match(ruleBody(css, ".brand::before,"), /height:\s*44px/);
+  assert.match(css, /max-width:\s*380px[\s\S]*?\.top\s*\{[^}]*height:\s*auto/);
+  assert.match(css, /max-width:\s*380px[\s\S]*?\.top\s*\{[^}]*min-height:\s*var\(--s-7\)/);
+  assert.match(css, /max-width:\s*380px[\s\S]*?\.top\s*\{[^}]*overflow:\s*visible/);
+  assert.match(css, /max-width:\s*380px[\s\S]*?\.top-inner\s*\{[^}]*flex-wrap:\s*wrap/);
+  assert.match(css, /max-width:\s*380px[\s\S]*?\.top-inner\s*\{[^}]*row-gap:\s*var\(--s-2\)/);
+  assert.match(css, /max-width:\s*380px[\s\S]*?\.brand-lockup,\s*\.top \.theme-switch\s*\{[^}]*flex-shrink:\s*0/);
 });
 
 test("index, summary, and original use the reading rhythm", () => {
