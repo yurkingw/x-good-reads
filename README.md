@@ -1,4 +1,4 @@
-# X Readable Archive
+# X Good Reads
 
 Turn one X post into a readable static HTML page, then send that page URL to a friend. `content/` in this repository is the only content source. The site publishes only to **GitHub Pages** (a project site).
 

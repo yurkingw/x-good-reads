@@ -3,20 +3,22 @@ layout: base.njk
 permalink: /
 ---
 <h1>{{ site.title }}</h1>
-<p class="lede">One post, one page. Open it, then send that page URL to a friend.</p>
+<p class="lede">One X post, one page. Share the link in WeChat or anywhere.</p>
 {% if posts.length %}
 <ul class="index">
   {% for post in posts %}
   <li>
-    <a href="{{ post.page_url | url }}">{{ post.title }}</a>
-    <p class="byline">
-      {{ post.author_name or "Unknown author" }}
-      {% if post.author_handle %} · @{{ post.author_handle }}{% endif %}
-      {% if post.created_at %} · <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time>{% endif %}
-    </p>
+    <a href="{{ post.page_url | url }}">
+      <span class="index-title">{{ post.title }}</span>
+      <span class="byline">
+        {{ post.author_name or "Unknown author" }}
+        {% if post.author_handle %} · @{{ post.author_handle }}{% endif %}
+        {% if post.created_at %} · <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time>{% endif %}
+      </span>
+    </a>
   </li>
   {% endfor %}
 </ul>
 {% else %}
-<p>No posts yet.</p>
+<p class="empty">No posts yet.</p>
 {% endif %}

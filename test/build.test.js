@@ -19,9 +19,9 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.match(index, /href="\/x-good-reads\/css\/site\.css"/);
   assert.match(index, new RegExp(`href="/x-good-reads/x/${sampleId}/"`));
   assert.match(index, /Critical thinking when agents do the work/);
-  assert.match(index, /X Readable Archive/);
-  assert.match(index, /One post, one page/);
-  assert.match(index, /The original text belongs to its author/);
+  assert.match(index, /X Good Reads/);
+  assert.match(index, /One X post, one page\. Share the link in WeChat or anywhere\./);
+  assert.match(index, /Original content belongs to its authors/);
   assert.doesNotMatch(index, /[\u4e00-\u9fff]/);
 
   for (const post of loadPosts()) {
@@ -36,9 +36,14 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
     });
     assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
     assert.match(html, /AI summary/);
-    assert.match(html, /Generated to help you skim/);
+    assert.match(html, /AI-generated for skimming\. Not a substitute for the original\./);
     assert.match(html, /<h2 id="meta-heading">Source<\/h2>/);
-    assert.match(html, /<h2 id="original-heading">Original text<\/h2>/);
+    assert.match(html, /<h2 id="original-heading">Original<\/h2>/);
+    assert.match(html, /<dt>Author<\/dt>/);
+    assert.match(html, /<dt>Handle<\/dt>/);
+    assert.match(html, /<dt>Published<\/dt>/);
+    assert.match(html, /<dt>Original<\/dt>/);
+    assert.match(html, />Open on X<\/a>/);
     assert.ok(html.includes(footerNotice));
     assert.ok(html.includes(`href="${post.original_url}"`));
     assert.match(html, /href="\/x-good-reads\/css\/site\.css"/);
@@ -75,6 +80,20 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.match(indexTemplate, /No posts yet/);
   assert.match(indexTemplate, /Unknown author/);
   const postTemplate = fs.readFileSync(path.join(root, "src", "post.njk"), "utf8");
-  assert.match(postTemplate, /No summary yet/);
+  assert.match(postTemplate, /No AI summary yet\. Add summary in the content file, then publish\./);
   assert.match(postTemplate, /Unknown/);
+  assert.match(postTemplate, /Post image/);
+
+  const css = fs.readFileSync(path.join(root, "src", "css", "site.css"), "utf8");
+  assert.match(css, /--bg:\s*#f4f1ea/);
+  assert.match(css, /--surface:\s*#fbfaf7/);
+  assert.match(css, /--ink:\s*#1a1714/);
+  assert.match(css, /--accent:\s*#0c5c3a/);
+  assert.match(css, /--accent-tint:\s*#e8f2ec/);
+  assert.match(css, /--radius-md:\s*8px/);
+  assert.match(css, /--shadow:\s*none/);
+  assert.match(css, /--measure:\s*38rem/);
+  assert.match(css, /--font-en:\s*"Iowan Old Style"/);
+  assert.doesNotMatch(css, /border-radius:\s*1[2-9]px/);
+  assert.doesNotMatch(indexTemplate, /display:\s*grid/);
 });

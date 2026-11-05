@@ -32,7 +32,9 @@
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="{{ "/" | url }}">{{ site.title }}</a>
+    <div class="top-inner">
+      <a class="brand" href="{{ "/" | url }}">{{ site.title }}</a>
+    </div>
   </header>
   <main>
     {{ content | safe }}
