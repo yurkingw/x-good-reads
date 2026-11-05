@@ -232,6 +232,141 @@ test("pickFetchedPost prefers article text", () => {
   assert.equal(post.title, "Essay");
 });
 
+function countEnglishWords(text) {
+  return (String(text).match(/\b[\w'-]+\b/g) || []).length;
+}
+
+function countChineseChars(text) {
+  return String(text).replace(/\s+/g, "").length;
+}
+
+function words(count, token = "word") {
+  return Array.from({ length: count }, () => token).join(" ");
+}
+
+test("rejects an over-limit English summary and writes nothing", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-en-limit-"));
+  let called = false;
+  const summary = words(251);
+  assert.equal(countEnglishWords(summary), 251);
+  await assert.rejects(() => runIngest({
+    env: {
+      STATUS_ID: ID,
+      FULL_TEXT: "Body that must not be archived",
+      SUMMARY_EN: summary
+    },
+    contentDir: dir,
+    fetchImpl: async () => {
+      called = true;
+      throw new Error("should not fetch");
+    }
+  }), /summary_en is 251 English words, over the hard max of 250[\s\S]*without writing a content file/);
+  assert.equal(called, false);
+  assert.equal(fs.readdirSync(dir).length, 0);
+});
+
+test("rejects an over-limit Chinese summary and writes nothing", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-zh-limit-"));
+  const summary = `${"字 ".repeat(501)}`;
+  assert.equal(countChineseChars(summary), 501);
+  await assert.rejects(() => runIngest({
+    env: {
+      STATUS_ID: ID,
+      FULL_TEXT: "Body that must not be archived",
+      SUMMARY_ZH: summary
+    },
+    contentDir: dir,
+    fetchImpl: async () => {
+      throw new Error("should not fetch");
+    }
+  }), /summary_zh is 501 characters after removing whitespace, over the hard max of 500[\s\S]*without writing a content file/);
+  assert.equal(fs.readdirSync(dir).length, 0);
+});
+
+test("rejects when both summaries are over the limit and writes nothing", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-both-limit-"));
+  let downloaded = false;
+  await assert.rejects(() => runIngest({
+    env: {
+      STATUS_ID: ID,
+      SUMMARY: words(251),
+      SUMMARY_ZH: "字".repeat(501)
+    },
+    contentDir: dir,
+    fetchImpl: async () => jsonResponse({ tweet: { text: "Fetched body" } }),
+    downloadImpl: async () => {
+      downloaded = true;
+      return { bytes: Buffer.from("png"), contentType: "image/png" };
+    }
+  }), /summary_en is 251 English words, over the hard max of 250[\s\S]*summary_zh is 501 characters after removing whitespace, over the hard max of 500[\s\S]*without writing a content file/);
+  assert.equal(downloaded, false);
+  assert.equal(fs.readdirSync(dir).length, 0);
+});
+
+test("accepts empty summaries and summaries inside the target band", async () => {
+  const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-empty-summary-"));
+  const empty = await runIngest({
+    env: {
+      STATUS_ID: ID,
+      FULL_TEXT: "Body",
+      SUMMARY_EN: " \n\t ",
+      SUMMARY_ZH: " \n "
+    },
+    contentDir: emptyDir,
+    fetchImpl: async () => {
+      throw new Error("should not fetch");
+    }
+  });
+  const emptySaved = JSON.parse(fs.readFileSync(empty.file, "utf8"));
+  assert.equal(emptySaved.summary_en, "");
+  assert.equal(emptySaved.summary_zh, "");
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-ok-summary-"));
+  const summaryEn = words(150, "self-check");
+  const summaryZh = "摘".repeat(280);
+  assert.equal(countEnglishWords(summaryEn), 150);
+  assert.equal(countChineseChars(summaryZh), 280);
+  const result = await runIngest({
+    env: {
+      STATUS_ID: ID,
+      FULL_TEXT: "Body",
+      SUMMARY_EN: summaryEn,
+      SUMMARY_ZH: summaryZh
+    },
+    contentDir: dir,
+    fetchImpl: async () => {
+      throw new Error("should not fetch");
+    }
+  });
+  const saved = JSON.parse(fs.readFileSync(result.file, "utf8"));
+  assert.equal(saved.summary_en, summaryEn);
+  assert.equal(saved.summary_zh, summaryZh);
+});
+
+test("accepts summaries at the hard max, including hyphenated words and spaced Chinese", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-max-summary-"));
+  const summaryEn = words(250, "can't");
+  const summaryZh = "字 ".repeat(500);
+  assert.equal(countEnglishWords(summaryEn), 250);
+  assert.equal(countChineseChars(summaryZh), 500);
+  assert.ok(summaryZh.length > 500);
+  const result = await runIngest({
+    env: {
+      STATUS_ID: ID,
+      FULL_TEXT: "Body",
+      SUMMARY_EN: summaryEn,
+      SUMMARY_ZH: summaryZh
+    },
+    contentDir: dir,
+    fetchImpl: async () => {
+      throw new Error("should not fetch");
+    }
+  });
+  const saved = JSON.parse(fs.readFileSync(result.file, "utf8"));
+  assert.equal(countEnglishWords(saved.summary_en), 250);
+  assert.equal(countChineseChars(saved.summary_zh), 500);
+});
+
 test("cli writes a file and a status id output", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-cli-"));
   const output = path.join(dir, "github-output.txt");

@@ -99,6 +99,17 @@ The home page uses that same default file. Posters already in the repo (about 82
 
 Store the English summary in `summary_en` and the Chinese summary in `summary_zh`. The page shows English first. A lone `summary` is treated as English. `full_text` stays in the post's original language. If only one summary language is present, that text is shown and the language control is omitted.
 
+### Summary length
+
+An empty summary is allowed. The page then says none is available yet. A summary that is present must stay inside the hard max below. Count each language on its own.
+
+| Language | Field | Target | Hard max | How to count |
+| --- | --- | --- | --- | --- |
+| English | `summary_en` (or `summary` when `summary_en` is empty) | 120–180 words | 250 words | `/\b[\w'-]+\b/g` |
+| Chinese | `summary_zh` | 220–350 characters | 500 characters | Length after removing all whitespace: `len(re.sub(r'\s+','', text))`. Han characters and punctuation count. Spaces and line breaks do not. |
+
+Form: one lead paragraph, or a lead paragraph plus at most five bullets. Point only at the thesis, the facts, and why the post is worth archiving. Do not restate the full post. Exception: an event timeline may reach the hard max, but it still must not approach the length of the original. Over the hard max is an ingest failure. Ingest checks `summary_en` and `summary_zh` before it writes, and it does not write a content file when either one is over the limit. Shorten the summary and run ingest again. Ingest does not commit a partial archive.
+
 ### Ingest with Actions
 
 On the Actions page, choose the **ingest** workflow, select the **main** branch, fill in the inputs, and run it. You can also call the API; see the next section.
@@ -140,11 +151,13 @@ Input keys (all strings, all optional, but at least one of `tweet_url` and `stat
 | `author_handle` | Handle, without `@` |
 | `created_at` | ISO 8601 timestamp in UTC. The page shows that same instant as `YYYY-MM-DD HH:MM UTC` |
 | `full_text` | Original text, kept in its original language. When this is set, nothing is fetched |
-| `summary` | English AI summary. Alias of `summary_en` when `summary_en` is empty |
-| `summary_en` | English AI summary. Shown by default |
-| `summary_zh` | Chinese AI summary. Optional. Shown when the reader switches to ZH |
+| `summary` | English AI summary. Alias of `summary_en` when `summary_en` is empty. Same hard max of 250 words |
+| `summary_en` | English AI summary. Shown by default. Target 120–180 words, hard max 250 words |
+| `summary_zh` | Chinese AI summary. Optional. Shown when the reader switches to ZH. Target 220–350 characters, hard max 500 characters after whitespace is removed |
 
-The caller generates the summaries and sends English on `summary_en` (or `summary`) and Chinese on `summary_zh`. Inputs are passed to `scripts/ingest.js` through environment variables. Do not switch this to shell expansion of `${{ inputs.full_text }}`.
+The caller generates the summaries. Length, form, the timeline exception, and the over-limit failure are defined in [Summary length](#summary-length). Over the hard max fails `scripts/ingest.js` before the workflow commits.
+
+Send English on `summary_en` (or `summary`) and Chinese on `summary_zh`. Inputs are passed to `scripts/ingest.js` through environment variables. Do not switch this to shell expansion of `${{ inputs.full_text }}`.
 
 ```bash
 curl -sS -X POST \

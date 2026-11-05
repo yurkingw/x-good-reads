@@ -85,6 +85,23 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(summary, /<p>/);
   assert.match(englishSummary, /cognitive surrender/);
   assert.match(chineseSummary, /认知投降/);
+  const visible = (html) => html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, "\"")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+  const countEnglishWords = (text) => (String(text).match(/\b[\w'-]+\b/g) || []).length;
+  const countChineseChars = (text) => String(text).replace(/\s+/g, "").length;
+  const enInner = sample.match(/id="summary-en"[^>]*>([\s\S]*?)<\/div>/);
+  const zhInner = sample.match(/id="summary-zh"[^>]*>([\s\S]*?)<\/div>/);
+  assert.ok(enInner && zhInner);
+  const renderedEnWords = countEnglishWords(visible(enInner[1]));
+  const renderedZhChars = countChineseChars(visible(zhInner[1]));
+  assert.ok(renderedEnWords >= 120 && renderedEnWords <= 180, `rendered summary_en is ${renderedEnWords} words`);
+  assert.ok(renderedZhChars >= 220 && renderedZhChars <= 350, `rendered summary_zh is ${renderedZhChars} characters`);
+  assert.ok(renderedEnWords <= 250 && renderedZhChars <= 500);
   const sourceAt = sample.indexOf('<h2 id="meta-heading">Source</h2>');
   const summaryAt = sample.indexOf('<h2 id="summary-heading">AI summary</h2>');
   const originalAt = sample.indexOf('<h2 id="original-heading">Original</h2>');
