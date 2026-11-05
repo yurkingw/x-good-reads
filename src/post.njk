@@ -86,10 +86,19 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
   <section class="original" id="original" lang="en" aria-labelledby="original-heading">
     <h2 id="original-heading">Original</h2>
     <div class="original-body">{{ post.full_text | renderText | safe }}</div>
-    {% if post.images.length %}
+    {% if post.videos and post.videos.length %}
+    <div class="videos">
+      {% for video in post.videos %}
+      <video controls playsinline preload="metadata"{% if video.poster %} poster="{{ video.poster | url }}"{% endif %} aria-label="Post video">
+        <source src="{{ video.src | url }}"{% if video.type %} type="{{ video.type }}"{% endif %}>
+      </video>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if post.display_images and post.display_images.length %}
     <div class="images">
-      {% for image in post.images %}
-      <img src="{{ image }}" alt="Post image" loading="lazy">
+      {% for image in post.display_images %}
+      <img src="{{ image | url }}" alt="Post image" loading="lazy">
       {% endfor %}
     </div>
     {% endif %}

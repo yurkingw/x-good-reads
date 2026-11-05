@@ -59,6 +59,57 @@ See https://example.com/already.png
   assert.equal(post.created_at_display, "2026-01-02 00:00 UTC");
 });
 
+test("keeps site-hosted images and videos and rejects X CDN media", () => {
+  const id = "123456789012345";
+  const photo = `/media/x/${id}/image-1.png`;
+  const poster = `/media/x/${id}/poster.jpg`;
+  const video = `/media/x/${id}/video.mp4`;
+  const post = buildStoredPost({
+    status_id: id,
+    full_text: "A post with media",
+    images: [photo, poster, "javascript:alert(1)"],
+    videos: [{ src: video, poster, type: "video/mp4" }]
+  });
+  assert.deepEqual(post.images, [photo, poster]);
+  assert.deepEqual(post.videos, [{ src: video, poster, type: "video/mp4" }]);
+  assert.equal(post.display_images, undefined);
+
+  assert.throws(() => buildStoredPost({
+    status_id: id,
+    full_text: "remote thumb only",
+    images: ["https://pbs.twimg.com/amplify_video_thumb/abc/img/x.jpg"]
+  }), /X CDN/);
+  assert.throws(() => buildStoredPost({
+    status_id: id,
+    full_text: "remote video",
+    videos: [{ src: "https://video.twimg.com/amplify_video/abc.mp4" }]
+  }), /X CDN/);
+  assert.throws(() => buildStoredPost({
+    status_id: id,
+    full_text: "wrong folder",
+    images: ["/media/x/999999999999999/poster.jpg"]
+  }), /status_id/);
+});
+
+test("loads a site video from a content file", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-video-"));
+  const id = "2117762468177183064";
+  const poster = `/media/x/${id}/poster.jpg`;
+  const video = `/media/x/${id}/video.mp4`;
+  fs.writeFileSync(path.join(dir, `${id}.json`), JSON.stringify({
+    status_id: id,
+    full_text: "video post",
+    images: [poster],
+    videos: [{ src: video, poster, type: "video/mp4" }]
+  }));
+  const [post] = loadPosts(dir);
+  assert.equal(post.videos[0].src, video);
+  assert.equal(post.videos[0].poster, poster);
+  assert.equal(post.videos[0].type, "video/mp4");
+  assert.deepEqual(post.images, [poster]);
+  assert.deepEqual(post.display_images, []);
+});
+
 test("fills a missing title and original url", () => {
   const post = buildStoredPost({
     status_id: "123456789012345",

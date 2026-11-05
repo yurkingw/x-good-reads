@@ -8,7 +8,14 @@
   "summary_en": "WolfyXBT (@wolfyxbt) flags Binance’s initial public report on the 29 October 2026 security incident and posts a short (~2 minute) visual summary so readers can grasp a long write-up quickly. He quotes Binance’s article “29 October Binance Security Incident: Initial Findings and Response Update.”\n\nPer that report: about USD 6.34 billion in digital assets were impacted; roughly USD 2.85 billion has been frozen or intercepted; Binance says it will absorb the loss for users and has already replenished most affected token assets (verifiable on Proof of Reserves). The FBI attributes the campaign to North Korea. The path combined supply-chain malware (June), fake recruitment / social engineering (September), pivot through an internal AI tool and stolen deployment credentials (20 October), then abuse of an internal wallet signing service on 29 October—moving large amounts of XRP, SOL, OP, and BTC, plus EIP-7702 delegations that kept working even after withdrawals were suspended until Binance cleared them with a special MPC procedure.",
   "summary_zh": "杀破狼 WolfyXBT（@wolfyxbt）转推并评论币安关于 2026-10-29 安全事件的初步调查报告，并附上约 2 分钟可视化视频，方便快速看懂长文。他引用的是币安文章《29 October Binance Security Incident: Initial Findings and Response Update》。\n\n报告要点：约 63.4 亿美元数字资产受影响；约 28.5 亿美元已被冻结或拦截；币安称由公司承担损失、用户不受损，多数受影响资产已补回并可在 Proof of Reserves 核验。FBI 指朝鲜为幕后。攻击链包括 6 月供应链投毒、9 月假招聘社工、10 月 20 日借内部 AI 工具与部署凭证横向、10 月 29 日滥用钱包签名服务，跨链转出大量 XRP/SOL/OP/BTC，并以 EIP-7702 授权在暂停提现后仍可继续挪动资产，直至币安用专门 MPC 流程清除链上授权。",
   "images": [
-    "https://pbs.twimg.com/amplify_video_thumb/2117761839316795392/img/0M0aInr5UilomTPh.jpg"
+    "/media/x/2117762468177183064/poster.jpg"
+  ],
+  "videos": [
+    {
+      "src": "/media/x/2117762468177183064/video.mp4",
+      "poster": "/media/x/2117762468177183064/poster.jpg",
+      "type": "video/mp4"
+    }
   ],
   "full_text": "币安刚刚发布了一份初步调查报告\n\n讲解了黑客是如何一步步黑进币安内部，最终盗走 60 多亿美金的，报告比较长，我这里做了个 2 分钟的可视化视频，让大家轻松看懂这份报告。"
 }

@@ -554,13 +554,20 @@ main { padding-block: var(--s-6); }
 }
 
 .original-body img,
-.images img {
+.images img,
+.videos video {
   display: block;
   max-width: 100%;
   height: auto;
   margin: var(--s-4) 0;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow);
+}
+
+.videos video {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
 
 .notice { padding-bottom: var(--s-7); }

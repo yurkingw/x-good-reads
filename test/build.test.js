@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import http from "node:http";
@@ -97,7 +98,32 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(original, /<h3>Offloading, deferral and surrender<\/h3>/);
   assert.match(original, /Back in the day, critical thinking/);
   assert.match(original, /Think independently/);
+  assert.doesNotMatch(sample, /<video\b/);
   assert.doesNotMatch(sample, /<script\b[^>]*\bsrc=/i);
+
+  const videoId = "2117762468177183064";
+  const videoPage = fs.readFileSync(path.join(root, "_site", "x", videoId, "index.html"), "utf8");
+  const videoOriginal = videoPage.slice(videoPage.indexOf('id="original"'), videoPage.indexOf('id="notice"'));
+  assert.match(videoOriginal, /<video\b[^>]*\bcontrols\b[^>]*\bplaysinline\b[^>]*\bpreload="metadata"/);
+  assert.match(videoOriginal, /poster="\/x-good-reads\/media\/x\/2117762468177183064\/poster\.jpg"/);
+  assert.match(videoOriginal, /<source\b[^>]*\bsrc="\/x-good-reads\/media\/x\/2117762468177183064\/video\.mp4"/);
+  assert.match(videoOriginal, /type="video\/mp4"/);
+  assert.match(videoPage, /USD 6\.34 billion/);
+  assert.match(videoPage, /63\.4 亿美元/);
+  assert.doesNotMatch(videoPage, /pbs\.twimg\.com|video\.twimg\.com|twimg\.com/);
+  const mp4Out = path.join(root, "_site", "media", "x", videoId, "video.mp4");
+  const posterOut = path.join(root, "_site", "media", "x", videoId, "poster.jpg");
+  const mp4SourcePath = path.join(root, "media", "x", videoId, "video.mp4");
+  const posterSourcePath = path.join(root, "media", "x", videoId, "poster.jpg");
+  assert.equal(fs.existsSync(mp4SourcePath), true, mp4SourcePath);
+  assert.equal(fs.existsSync(posterSourcePath), true, posterSourcePath);
+  assert.equal(fs.existsSync(mp4Out), true, mp4Out);
+  assert.equal(fs.existsSync(posterOut), true, posterOut);
+  const mp4Source = fs.readFileSync(mp4SourcePath);
+  const posterSource = fs.readFileSync(posterSourcePath);
+  assert.equal(createHash("sha256").update(mp4Source).digest("hex"), "42045bddb13607baa6e5d4c37b6f07cb39a09f51b9c1fd00f7c40d50bfb15b51");
+  assert.ok(fs.readFileSync(mp4Out).equals(mp4Source));
+  assert.ok(fs.readFileSync(posterOut).equals(posterSource));
   assert.equal(fs.existsSync(path.join(root, "_site", "css", "site.css")), true);
   assert.match(sample, /href="\/x-good-reads\/favicon\.svg"/);
   assert.equal(fs.existsSync(path.join(root, "_site", "favicon.svg")), true);

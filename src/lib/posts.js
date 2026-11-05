@@ -5,6 +5,9 @@ import matter from "gray-matter";
 const STATUS_ID = /^\d{5,25}$/;
 const HANDLE = /^[A-Za-z0-9_]{1,30}$/;
 
+const SITE_MEDIA = /^\/media\/x\/(\d{5,25})\/([A-Za-z0-9][A-Za-z0-9._-]{0,120})$/;
+const BLOCKED_MEDIA_HOST = /(^|\.)twimg\.com$/i;
+
 export function safeHttpUrl(value) {
   try {
     const url = new URL(String(value || "").trim());
@@ -13,6 +16,27 @@ export function safeHttpUrl(value) {
   } catch {
     return "";
   }
+}
+
+export function mediaReference(value, statusId) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  if (text.startsWith("/")) {
+    const match = SITE_MEDIA.exec(text);
+    if (!match) {
+      throw new Error(`media path ${text} must look like /media/x/<status_id>/<file>`);
+    }
+    if (statusId && match[1] !== statusId) {
+      throw new Error(`media path ${text} does not match status_id ${statusId}`);
+    }
+    return text;
+  }
+  const href = safeHttpUrl(text);
+  if (!href) return "";
+  if (BLOCKED_MEDIA_HOST.test(new URL(href).hostname)) {
+    throw new Error(`Refusing X CDN media URL ${href}. Save the file under media/x/<status_id>/ and reference that path.`);
+  }
+  return href;
 }
 
 export function normalizeTimestamp(value) {
@@ -61,15 +85,42 @@ export function pickSummaries(input) {
   };
 }
 
-function normalizeImages(value, fullText) {
+function normalizeImages(value, fullText, statusId) {
   const list = Array.isArray(value) ? value : [];
   const images = [];
   for (const item of list) {
-    const href = safeHttpUrl(typeof item === "string" ? item : item?.url);
+    const href = mediaReference(typeof item === "string" ? item : item?.url, statusId);
     if (!href || fullText.includes(href) || images.includes(href)) continue;
     images.push(href);
   }
   return images;
+}
+
+function cleanMediaType(value) {
+  const type = String(value ?? "").trim().toLowerCase();
+  if (!/^(image|video)\/[a-z0-9.+-]+$/.test(type)) return "";
+  return type;
+}
+
+function normalizeVideos(value, statusId) {
+  const list = Array.isArray(value) ? value : [];
+  const videos = [];
+  for (const item of list) {
+    const raw = typeof item === "string" ? item : item?.src || item?.url;
+    const src = mediaReference(raw, statusId);
+    if (!src) continue;
+    const poster = item && typeof item === "object" && item.poster
+      ? mediaReference(item.poster, statusId)
+      : "";
+    let type = cleanMediaType(item && typeof item === "object" ? item.type : "");
+    if (!type && /\.mp4(?:$|\?)/i.test(src)) type = "video/mp4";
+    if (videos.some((video) => video.src === src)) continue;
+    const video = { src };
+    if (poster) video.poster = poster;
+    if (type) video.type = type;
+    videos.push(video);
+  }
+  return videos;
 }
 
 export function buildStoredPost(input) {
@@ -106,14 +157,17 @@ export function buildStoredPost(input) {
     created_at: normalizeTimestamp(input.created_at),
     original_url,
     ...pickSummaries(input),
-    images: normalizeImages(input.images, full_text),
+    images: normalizeImages(input.images, full_text, status_id),
+    videos: normalizeVideos(input.videos, status_id),
     full_text
   };
 }
 
 function present(stored) {
+  const posters = new Set((stored.videos || []).map((video) => video.poster).filter(Boolean));
   return {
     ...stored,
+    display_images: (stored.images || []).filter((image) => !posters.has(image)),
     page_url: `/x/${stored.status_id}/`,
     created_at_display: formatUtc(stored.created_at),
     summary_plain: (stored.summary_en || stored.summary_zh).replace(/\s+/g, " ").trim().slice(0, 180)
@@ -141,6 +195,7 @@ function readSource(file) {
       summary_en: data.summary_en,
       summary_zh: data.summary_zh,
       images: data.images || data.media || [],
+      videos: data.videos || [],
       full_text: data.full_text || ""
     };
   }
@@ -158,6 +213,7 @@ function readSource(file) {
     summary_en: data.summary_en,
     summary_zh: data.summary_zh,
     images: data.images || [],
+    videos: data.videos || [],
     full_text: parsed.content.trim() || data.full_text || ""
   };
 }

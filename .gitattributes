@@ -1,1 +1,7 @@
 * text=auto eol=lf
+media/**/*.mp4 binary
+media/**/*.jpg binary
+media/**/*.jpeg binary
+media/**/*.png binary
+media/**/*.gif binary
+media/**/*.webp binary
