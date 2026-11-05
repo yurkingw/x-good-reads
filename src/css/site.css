@@ -167,8 +167,10 @@ h3 {
   box-shadow: var(--shadow);
 }
 
-.summary-body {
+.summary-body,
+.summary-body h3 {
   color: var(--ink-soft);
+  font-family: var(--font-ui);
   font-size: 1rem;
   line-height: var(--lh-zh);
 }

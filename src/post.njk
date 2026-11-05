@@ -15,7 +15,7 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
     {% if post.summary %}
     <div class="summary-body">{{ post.summary | renderText | safe }}</div>
     {% else %}
-    <p class="missing">No AI summary yet. Add summary in the content file, then publish.</p>
+    <p class="missing">No summary yet. Add summary in the content file, then publish.</p>
     {% endif %}
   </section>
 
