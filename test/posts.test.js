@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { buildStoredPost, formatUtc, loadPosts, pickSummaries } from "../src/lib/posts.js";
+import { absoluteSiteUrl, buildStoredPost, formatUtc, loadPosts, pickOgImagePath, pickSummaries } from "../src/lib/posts.js";
 
 const ID = "2117512471930167377";
 
@@ -108,6 +108,85 @@ test("loads a site video from a content file", () => {
   assert.equal(post.videos[0].type, "video/mp4");
   assert.deepEqual(post.images, [poster]);
   assert.deepEqual(post.display_images, []);
+});
+
+test("picks a hosted photo, then a video poster, then the site default", () => {
+  const id = "123456789012345";
+  const photo = `/media/x/${id}/image-1.png`;
+  const poster = `/media/x/${id}/poster.jpg`;
+  const video = `/media/x/${id}/video.mp4`;
+  assert.equal(pickOgImagePath({
+    status_id: id,
+    images: [poster, "https://example.com/remote.jpg", photo],
+    videos: [{ src: video, poster, type: "video/mp4" }]
+  }), photo);
+  assert.equal(pickOgImagePath({
+    status_id: id,
+    images: [],
+    videos: [{ src: video, poster, type: "video/mp4" }]
+  }), poster);
+  assert.equal(pickOgImagePath({
+    status_id: id,
+    images: ["https://example.com/only-remote.jpg"],
+    videos: []
+  }), "/media/site/og-default.jpg");
+  assert.equal(
+    absoluteSiteUrl(`/media/x/${id}/poster.jpg`),
+    `https://yurkingw.github.io/x-good-reads/media/x/${id}/poster.jpg`
+  );
+  assert.equal(
+    absoluteSiteUrl("/media/site/og-default.jpg", "https://yurkingw.github.io/x-good-reads/"),
+    "https://yurkingw.github.io/x-good-reads/media/site/og-default.jpg"
+  );
+});
+
+test("uses an animated GIF still frame when that frame is present", () => {
+  const id = "323456789012345";
+  const gif = `/media/x/${id}/gif-1.gif`;
+  const still = `/media/x/${id}/gif-poster-1.jpg`;
+  const mediaRoot = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-og-"));
+  fs.mkdirSync(path.join(mediaRoot, id), { recursive: true });
+  fs.writeFileSync(path.join(mediaRoot, id, "gif-poster-1.jpg"), "still");
+  assert.equal(pickOgImagePath({
+    status_id: id,
+    images: [gif],
+    videos: []
+  }, { mediaRoot }), still);
+
+  const listed = "423456789012345";
+  assert.equal(pickOgImagePath({
+    status_id: listed,
+    images: [`/media/x/${listed}/gif-poster-1.jpg`],
+    videos: [{
+      src: `/media/x/${listed}/gif-1.mp4`,
+      poster: `/media/x/${listed}/gif-poster-1.jpg`
+    }]
+  }), `/media/x/${listed}/gif-poster-1.jpg`);
+});
+
+test("a video post without a poster field uses poster.jpg beside the video", () => {
+  const id = "2117762468177183064";
+  assert.equal(pickOgImagePath({
+    status_id: id,
+    images: [],
+    videos: [{ src: `/media/x/${id}/video.mp4`, type: "video/mp4" }]
+  }), `/media/x/${id}/poster.jpg`);
+});
+
+test("loaded posts expose an absolute in-site og_image", () => {
+  const posts = loadPosts();
+  const video = posts.find((post) => post.status_id === "2117762468177183064");
+  const text = posts.find((post) => post.status_id === "2117512471930167377");
+  assert.equal(
+    video.og_image,
+    "https://yurkingw.github.io/x-good-reads/media/x/2117762468177183064/poster.jpg"
+  );
+  assert.equal(
+    text.og_image,
+    "https://yurkingw.github.io/x-good-reads/media/site/og-default.jpg"
+  );
+  assert.equal(video.og_image.includes("twimg.com"), false);
+  assert.equal(text.og_image.includes("twimg.com"), false);
 });
 
 test("fills a missing title and original url", () => {

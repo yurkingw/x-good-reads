@@ -85,6 +85,18 @@ Images, animated GIFs, and videos belong in this repository. Do not leave an X C
 - Size: prefer each file under 25MB. A file over 50MB must be called out in the pull request. Do not commit a file over 95MB. The video on `2117762468177183064` is about 9.6MB and does not need Git LFS.
 - The footer already says original content belongs to its authors. Files under `media/` keep the readable archive working when an X CDN hotlink disappears. This archive does not backfill older posts that have no media. A post that already points at X CDN media, including `2117762468177183064`, has to be hosted here.
 
+## Share image
+
+Every page sets `og:image` and `twitter:image` to the same absolute `https` URL. That URL is `site.baseUrl` plus a path under `media/`. It is never a root-relative path, and it never points at an X CDN host. `twitter:card` is `summary_large_image`. `twitter:title` and `twitter:description` use the same title and description as the Open Graph tags.
+
+For a post, `src/lib/posts.js` chooses the path when the page data is loaded. Ingest does not write an image URL by hand. After it saves files under `media/x/<status_id>/` and rewrites `images` and `videos`, the next build follows those fields:
+
+1. The first JPEG, PNG, GIF, or WebP already stored at `/media/x/<status_id>/<file>` in `images`, skipping a video poster. An animated GIF (`gif-<n>.gif`) uses its still first frame `gif-poster-<n>.jpg` when that file is in `images` or in the same directory. A `gif-poster-<n>.jpg` still counts here when it is also `videos[].poster`.
+2. Otherwise the video poster: `videos[0].poster` when that path is on this site, or `media/x/<status_id>/poster.jpg` when the video has no poster field and that file exists.
+3. Otherwise `media/site/og-default.jpg`.
+
+The home page uses that same default file. Posters already in the repo (about 82KB) stay as they are. Keep each share image under 300KB.
+
 Store the English summary in `summary_en` and the Chinese summary in `summary_zh`. The page shows English first. A lone `summary` is treated as English. `full_text` stays in the post's original language. If only one summary language is present, that text is shown and the language control is omitted.
 
 ### Ingest with Actions
