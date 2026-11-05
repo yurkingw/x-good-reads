@@ -21,7 +21,16 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(index, new RegExp(`href="/x-good-reads/x/${sampleId}/"`));
   assert.match(index, /Critical thinking when agents do the work/);
   assert.match(index, /X Good Reads/);
-  assert.match(index, /One X post, one page\. Share the link anywhere \(WeChat works\)\./);
+  assert.match(index, /One X post, one page\. Share the link anywhere\./);
+  assert.doesNotMatch(index, /Share the link anywhere \(/);
+  assert.match(index, /2026-11-03 07:01 UTC/);
+  assert.match(index, /aria-label="Color theme"/);
+  assert.match(index, /data-theme-set="system"[^>]*aria-pressed="true"[^>]*>Auto<\/button>/);
+  assert.match(index, /data-theme-set="day"[^>]*>Day<\/button>/);
+  assert.match(index, /data-theme-set="night"[^>]*>Night<\/button>/);
+  assert.match(index, /localStorage\.getItem\("xgr-theme"\)/);
+  assert.match(index, /<html lang="en">/);
+  assert.doesNotMatch(index, /<html[^>]*\sdata-theme=/);
   assert.match(index, /Original content belongs to its authors/);
   assert.doesNotMatch(index, /[\u4e00-\u9fff]/);
 
@@ -77,8 +86,10 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(sample, /aria-label="Summary language"/);
   assert.ok(sample.indexOf('class="summary-body is-en"') < sample.indexOf('id="summary-zh"'));
   assert.doesNotMatch(englishSummary, /认知投降/);
-  assert.match(sample, /<time datetime="2026-11-03T07:01:29\.000Z">2026-11-03T07:01:29\.000Z<\/time>/);
-  assert.match(sample, /2026-11-03 15:01 \(Beijing time\)/);
+  assert.match(sample, /<time datetime="2026-11-03T07:01:29\.000Z">2026-11-03 07:01 UTC<\/time>/);
+  assert.doesNotMatch(sample, />2026-11-03T07:01:29\.000Z</);
+  assert.match(sample, /aria-label="Color theme"/);
+  assert.match(sample, /data-theme-set="system"[^>]*aria-pressed="true"/);
   assert.match(sample, /lang="en"/);
   assert.doesNotMatch(original, /[\u4e00-\u9fff]/);
   assert.match(sample, /href="https:\/\/x\.com\/addyosmani\/status\/2117512471930167377"/);
@@ -102,17 +113,32 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(postTemplate, /Post image/);
 
   const css = fs.readFileSync(path.join(root, "src", "css", "site.css"), "utf8");
-  assert.match(css, /--bg:\s*#f4f1ea/);
-  assert.match(css, /--surface:\s*#fbfaf7/);
-  assert.match(css, /--ink:\s*#1a1714/);
-  assert.match(css, /--accent:\s*#0c5c3a/);
-  assert.match(css, /--accent-tint:\s*#e8f2ec/);
+  assert.match(css, /--bg:\s*#ffffff/);
+  assert.match(css, /--surface:\s*#fafafa/);
+  assert.match(css, /--surface-soft:\s*#f5f5f5/);
+  assert.match(css, /--ink:\s*#000000/);
+  assert.match(css, /--ink-soft:\s*#1f1f1f/);
+  assert.match(css, /--muted:\s*#6e6e6e/);
+  assert.match(css, /--line:\s*#e5e5e5/);
+  assert.match(css, /--accent:\s*#000000/);
+  assert.match(css, /--accent-tint:\s*#f5f5f5/);
+  assert.match(css, /--bg:\s*#0d0d0d/);
+  assert.match(css, /--surface:\s*#161616/);
+  assert.match(css, /--ink:\s*#f5f5f5/);
+  assert.match(css, /--accent:\s*#f5f5f5/);
+  assert.match(css, /\[data-theme="night"\]/);
+  assert.match(css, /prefers-color-scheme:\s*dark/);
+  assert.match(css, /:root:not\(\[data-theme="day"\]\):not\(\[data-theme="night"\]\)/);
   assert.match(css, /--radius-md:\s*8px/);
   assert.match(css, /--shadow:\s*none/);
-  assert.match(css, /--measure:\s*38rem/);
-  assert.match(css, /--lh-summary:\s*1\.65/);
-  assert.match(css, /--font-ui:\s*system-ui, "Segoe UI", "Helvetica Neue", "PingFang SC", "Noto Sans SC", Arial, sans-serif/);
-  assert.match(css, /--font-en-serif:\s*"Iowan Old Style"/);
+  assert.match(css, /--measure:\s*40rem/);
+  assert.match(css, /--lh-body:\s*1\.65/);
+  assert.match(css, /--lh-summary:\s*1\.55/);
+  assert.match(css, /--track-display:\s*-0\.02em/);
+  assert.match(css, /--font-ui:\s*"Inter", system-ui, -apple-system, "Segoe UI", "Helvetica Neue",\s*"PingFang SC", "Noto Sans SC", Arial, sans-serif/);
+  assert.match(css, /font-family:\s*"Inter"/);
+  assert.doesNotMatch(css, /#f4f1ea|#fbfaf7|#0c5c3a|#e8f2ec|#1a1714/);
+  assert.doesNotMatch(css, /--font-en-serif|Iowan Old Style|Georgia|Palatino/);
   assert.doesNotMatch(css, /border-radius:\s*1[2-9]px/);
   assert.doesNotMatch(indexTemplate, /display:\s*grid/);
   assert.match(css, /\.summary:has\(\.is-en\):has\(\.is-zh\):not\(\.is-zh-on\)/);
@@ -123,6 +149,15 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
 
   await assertToggleInChrome(sampleId);
 });
+
+function bodyBackground(page) {
+  return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+}
+
+async function expectBackground(page, color) {
+  await page.waitForFunction((expected) => getComputedStyle(document.body).backgroundColor === expected, color);
+  assert.equal(await bodyBackground(page), color);
+}
 
 function summaryVisibility(zhChecked) {
   if (zhChecked) return { en: "none", zh: "block" };
@@ -190,6 +225,40 @@ async function assertToggleInChrome(sampleId) {
     assert.equal(await page.locator('button[data-lang="en"]').getAttribute("aria-pressed"), "true");
     assert.equal(await display(".is-en"), "block");
     assert.equal(await display(".is-zh"), "none");
+
+    await page.evaluate(() => localStorage.removeItem("xgr-theme"));
+    await page.reload();
+    await page.emulateMedia({ colorScheme: "dark" });
+    assert.equal(await page.locator("html").getAttribute("data-theme"), null);
+    assert.equal(await page.locator('[data-theme-set="system"]').getAttribute("aria-pressed"), "true");
+    assert.equal(await page.locator('[data-theme-set="day"]').getAttribute("aria-pressed"), "false");
+    assert.equal(await page.locator('[data-theme-set="night"]').getAttribute("aria-pressed"), "false");
+    await expectBackground(page, "rgb(13, 13, 13)");
+
+    await page.locator('[data-theme-set="day"]').click();
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "day");
+    assert.equal(await page.locator('[data-theme-set="day"]').getAttribute("aria-pressed"), "true");
+    assert.equal(await page.evaluate(() => localStorage.getItem("xgr-theme")), "day");
+    await expectBackground(page, "rgb(255, 255, 255)");
+    await page.reload();
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "day");
+    assert.equal(await page.locator('[data-theme-set="day"]').getAttribute("aria-pressed"), "true");
+    await expectBackground(page, "rgb(255, 255, 255)");
+
+    await page.locator('[data-theme-set="night"]').click();
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "night");
+    assert.equal(await page.evaluate(() => localStorage.getItem("xgr-theme")), "night");
+    await expectBackground(page, "rgb(13, 13, 13)");
+    await page.reload();
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "night");
+    assert.equal(await page.locator('[data-theme-set="night"]').getAttribute("aria-pressed"), "true");
+
+    await page.locator('[data-theme-set="system"]').click();
+    assert.equal(await page.locator("html").getAttribute("data-theme"), null);
+    assert.equal(await page.evaluate(() => localStorage.getItem("xgr-theme")), "system");
+    assert.equal(await page.locator('[data-theme-set="system"]').getAttribute("aria-pressed"), "true");
+    await page.emulateMedia({ colorScheme: "light" });
+    await expectBackground(page, "rgb(255, 255, 255)");
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

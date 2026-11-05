@@ -3,7 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (function () {
+      try {
+        var mode = localStorage.getItem("xgr-theme");
+        if (mode === "day" || mode === "night") {
+          document.documentElement.setAttribute("data-theme", mode);
+        }
+      } catch (e) {}
+    })();
+  </script>
   <title>{% if post %}{{ post.title }} · {% endif %}{{ site.title }}</title>
   {% if post and post.summary_plain %}
   <meta name="description" content="{{ post.summary_plain }}">
@@ -34,6 +44,13 @@
   <header class="top">
     <div class="top-inner">
       <a class="brand" href="{{ "/" | url }}">{{ site.title }}</a>
+      <div class="theme-switch" role="group" aria-label="Color theme">
+        <button type="button" data-theme-set="system" aria-pressed="true">Auto</button>
+        <span aria-hidden="true">·</span>
+        <button type="button" data-theme-set="day" aria-pressed="false">Day</button>
+        <span aria-hidden="true">·</span>
+        <button type="button" data-theme-set="night" aria-pressed="false">Night</button>
+      </div>
     </div>
   </header>
   <main>
@@ -42,5 +59,35 @@
   <footer class="notice" id="notice">
     <p>{{ site.footerNotice }}</p>
   </footer>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var storageKey = "xgr-theme";
+      var buttons = document.querySelectorAll(".theme-switch button[data-theme-set]");
+      function read() {
+        try {
+          var mode = localStorage.getItem(storageKey);
+          if (mode === "day" || mode === "night" || mode === "system") return mode;
+        } catch (e) {}
+        return "system";
+      }
+      function apply(mode, persist) {
+        if (mode === "day" || mode === "night") root.setAttribute("data-theme", mode);
+        else root.removeAttribute("data-theme");
+        buttons.forEach(function (button) {
+          button.setAttribute("aria-pressed", button.getAttribute("data-theme-set") === mode ? "true" : "false");
+        });
+        if (persist) {
+          try { localStorage.setItem(storageKey, mode); } catch (e) {}
+        }
+      }
+      apply(read(), false);
+      buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          apply(button.getAttribute("data-theme-set"), true);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
