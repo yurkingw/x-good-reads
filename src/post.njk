@@ -41,9 +41,9 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
     <div class="summary-head">
       <h2 id="summary-heading">AI summary</h2>
       {% if post.summary_en or post.summary_zh %}
-      <div class="lang-switch" role="group" aria-label="Summary language">
+      <div class="seg lang-switch" role="group" aria-label="Summary language">
         <button type="button" data-lang="en" aria-pressed="{{ 'true' if post.summary_en else 'false' }}"{% if not post.summary_en %} disabled{% endif %}>EN</button>
-        <span class="lang-sep" aria-hidden="true">·</span>
+        <span class="seg-gap" aria-hidden="true">·</span>
         <button type="button" data-lang="zh" aria-pressed="{{ 'true' if (post.summary_zh and not post.summary_en) else 'false' }}"{% if not post.summary_zh %} disabled{% endif %}>中文</button>
       </div>
       {% endif %}
