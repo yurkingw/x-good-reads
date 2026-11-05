@@ -325,6 +325,38 @@ export async function downloadMedia(url, fetchImpl) {
   return { bytes, contentType };
 }
 
+const SUMMARY_EN_HARD_MAX = 250;
+const SUMMARY_ZH_HARD_MAX = 500;
+
+export function countSummaryEnWords(text) {
+  return (String(text).match(/\b[\w'-]+\b/g) || []).length;
+}
+
+export function countSummaryZhChars(text) {
+  return String(text).replace(/\s+/g, "").length;
+}
+
+export function assertSummaryLimits(summaryEn, summaryZh) {
+  const errors = [];
+  const en = String(summaryEn ?? "");
+  const zh = String(summaryZh ?? "");
+  if (en.trim()) {
+    const words = countSummaryEnWords(en);
+    if (words > SUMMARY_EN_HARD_MAX) {
+        errors.push(`summary_en is ${words} English words, over the hard max of 250.`);
+    }
+  }
+  if (zh.trim()) {
+    const chars = countSummaryZhChars(zh);
+    if (chars > SUMMARY_ZH_HARD_MAX) {
+        errors.push(`summary_zh is ${chars} characters after removing whitespace, over the hard max of 500.`);
+    }
+  }
+  if (errors.length) {
+    throw new IngestError(`${errors.join(" ")} Stopped without writing a content file.`);
+  }
+}
+
 function failureMessage(errors) {
   const lines = [
     "Could not fetch the original text. Stopped without writing a content file.",
@@ -338,6 +370,9 @@ function failureMessage(errors) {
 
 export async function runIngest({ env, contentDir, fetchImpl, mediaDir, downloadImpl }) {
   const status_id = resolveStatusId(env.STATUS_ID, env.TWEET_URL);
+  const summaryEn = textOf(env.SUMMARY_EN) || textOf(env.SUMMARY);
+  const summaryZh = textOf(env.SUMMARY_ZH);
+  assertSummaryLimits(summaryEn, summaryZh);
   let fullText = String(env.FULL_TEXT ?? "").trim();
   let fetched = null;
   if (!fullText) {
@@ -368,8 +403,8 @@ export async function runIngest({ env, contentDir, fetchImpl, mediaDir, download
       author_handle: env.AUTHOR_HANDLE || fetched?.author_handle || "",
       created_at: env.CREATED_AT || fetched?.created_at || "",
       original_url: tweetUrl || fetched?.original_url || "",
-      summary_en: env.SUMMARY_EN || env.SUMMARY || "",
-      summary_zh: env.SUMMARY_ZH || "",
+      summary_en: summaryEn,
+      summary_zh: summaryZh,
       images: hosted.images,
       videos: hosted.videos,
       full_text: fullText

@@ -39,17 +39,17 @@ on:
         default: ""
         type: string
       summary:
-        description: "English AI summary alias. Used only when summary_en is empty."
+        description: "English AI summary alias. Used only when summary_en is empty. Same hard max: 250 words."
         required: false
         default: ""
         type: string
       summary_en:
-        description: "English AI summary. Shown by default. This action does not call a summary API."
+        description: "English AI summary. Optional. Target 120-180 words, hard max 250 words. Over the limit fails before a content file is written. This action does not call a summary API."
         required: false
         default: ""
         type: string
       summary_zh:
-        description: "Chinese AI summary. Optional. Readers can switch to it when both languages are stored."
+        description: "Chinese AI summary. Optional. Target 220-350 characters, hard max 500 characters after removing whitespace. Over the limit fails before a content file is written."
         required: false
         default: ""
         type: string
@@ -86,7 +86,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Write content file
+      - name: Validate summaries and write content file
         id: ingest
         env:
           TWEET_URL: ${{ inputs.tweet_url }}
