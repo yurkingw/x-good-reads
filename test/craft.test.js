@@ -198,3 +198,61 @@ test("index, summary, and original use the reading rhythm", () => {
   assert.match(ruleBody(css, ".original-body p"), /margin:\s*var\(--s-4\) 0/);
   assert.match(ruleBody(css, ".original-body a"), /text-decoration:\s*underline/);
 });
+
+test("back to top is a hairline square on the shared layout", () => {
+  assert.match(base, /<button type="button" class="back-to-top" aria-label="Back to top" hidden/);
+  assert.match(base, /viewBox="0 0 16 16"/);
+  assert.match(base, /stroke="currentColor"/);
+  assert.match(base, /stroke-width="1\.5"/);
+  assert.match(base, /scrollY >= window\.innerHeight/);
+  assert.match(base, /scrollTo\(\{ top: 0, behavior: prefersReducedMotion\(\) \? "auto" : "smooth" \}\)/);
+  assert.match(base, /prefers-reduced-motion: reduce/);
+  assert.doesNotMatch(base, /<a href="#"[^>]*class="back-to-top"/);
+
+  const button = ruleBody(css, ".back-to-top");
+  assert.match(button, /position:\s*fixed/);
+  assert.match(button, /z-index:\s*20\b/);
+  assert.match(button, /width:\s*var\(--s-6\)/);
+  assert.match(button, /height:\s*var\(--s-6\)/);
+  assert.match(button, /border-radius:\s*var\(--radius-sm\)/);
+  assert.match(button, /border:\s*1px solid var\(--line\)/);
+  assert.match(button, /background:\s*var\(--surface\)/);
+  assert.match(button, /box-shadow:\s*none/);
+  assert.match(button, /color:\s*var\(--muted\)/);
+  assert.match(button, /right:\s*calc\(var\(--s-4\) \+ env\(safe-area-inset-right, 0px\)\)/);
+  assert.match(button, /bottom:\s*calc\(var\(--s-4\) \+ env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.match(button, /opacity:\s*0/);
+  assert.match(button, /visibility:\s*hidden/);
+  assert.match(button, /pointer-events:\s*none/);
+  assert.match(ruleBody(css, ".back-to-top[hidden]"), /display:\s*none/);
+  assert.doesNotMatch(button, /backdrop-filter|blur\(|linear-gradient|radial-gradient|999px|border-radius:\s*50%/);
+  assert.doesNotMatch(button, /transition:/);
+
+  const visible = ruleBody(css, ".back-to-top.is-visible");
+  assert.match(visible, /opacity:\s*1/);
+  assert.match(visible, /visibility:\s*visible/);
+  assert.match(visible, /pointer-events:\s*auto/);
+
+  const hit = ruleBody(css, ".back-to-top::before");
+  assert.match(hit, /width:\s*44px/);
+  assert.match(hit, /height:\s*44px/);
+
+  const hover = ruleBody(css, ".back-to-top:hover");
+  assert.match(hover, /color:\s*var\(--ink\)/);
+  assert.match(hover, /border-color:\s*var\(--line-strong\)/);
+  assert.match(ruleBody(css, ".back-to-top:focus-visible"), /color:\s*var\(--ink\)/);
+  assert.match(ruleBody(css, ".back-to-top:active"), /color:\s*var\(--ink\)/);
+  assert.doesNotMatch(css, /\.back-to-top:active\s*\{[^}]*transform:/);
+
+  assert.match(css, /max-width:\s*380px[\s\S]*?\.back-to-top\s*\{[^}]*right:\s*calc\(var\(--s-3\) \+ env\(safe-area-inset-right, 0px\)\)/);
+  assert.match(css, /max-width:\s*380px[\s\S]*?\.back-to-top\s*\{[^}]*bottom:\s*calc\(var\(--s-3\) \+ env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.match(
+    css,
+    /@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*\.back-to-top \{[^}]*transition:\s*opacity 180ms ease, visibility 0s linear 180ms/
+  );
+  assert.match(
+    css,
+    /\.back-to-top\.is-visible \{[^}]*transition:\s*opacity 180ms ease, visibility 0s linear 0s/
+  );
+  assert.doesNotMatch(ruleBody(css, ".back-to-top svg"), /animation:/);
+});
