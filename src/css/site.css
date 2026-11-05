@@ -14,9 +14,9 @@
   --measure: 38rem;
   --pad-x: 1.25rem;
   --lh-body: 1.7;
-  --lh-zh: 1.75;
-  --font-ui: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Segoe UI", system-ui, sans-serif;
-  --font-en: "Iowan Old Style", "Palatino Linotype", Palatino, "Source Serif 4", Georgia, "Times New Roman", serif;
+  --lh-summary: 1.65;
+  --font-ui: system-ui, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-en-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Source Serif 4", Georgia, "Times New Roman", serif;
 }
 
 @media (max-width: 380px) {
@@ -39,7 +39,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-ui);
-  line-height: var(--lh-zh);
+  line-height: 1.6;
 }
 
 a { color: var(--accent); }
@@ -80,7 +80,7 @@ main { padding-top: 1.45rem; padding-bottom: 2.25rem; }
 h1 {
   margin: 0 0 0.85rem;
   color: var(--ink);
-  font-family: var(--font-en);
+  font-family: var(--font-en-serif);
   font-size: 1.45rem;
   font-weight: 650;
   letter-spacing: -0.015em;
@@ -102,7 +102,7 @@ h2 {
 h3 {
   margin: 1.65rem 0 0.35rem;
   color: var(--ink);
-  font-family: var(--font-en);
+  font-family: var(--font-en-serif);
   font-size: 1.2rem;
   font-weight: 650;
   line-height: 1.35;
@@ -145,7 +145,7 @@ h3 {
 .index-title {
   display: block;
   color: var(--ink);
-  font-family: var(--font-en);
+  font-family: var(--font-en-serif);
   font-size: 1.0625rem;
   font-weight: 650;
   line-height: 1.35;
@@ -172,7 +172,7 @@ h3 {
   color: var(--ink-soft);
   font-family: var(--font-ui);
   font-size: 1rem;
-  line-height: var(--lh-zh);
+  line-height: var(--lh-summary);
 }
 
 .summary-body > :first-child,
@@ -228,7 +228,7 @@ h3 {
 
 .original-body {
   color: var(--ink);
-  font-family: var(--font-en);
+  font-family: var(--font-en-serif);
   font-size: 1.0625rem;
   line-height: var(--lh-body);
 }

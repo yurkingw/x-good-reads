@@ -20,7 +20,7 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.match(index, new RegExp(`href="/x-good-reads/x/${sampleId}/"`));
   assert.match(index, /Critical thinking when agents do the work/);
   assert.match(index, /X Good Reads/);
-  assert.match(index, /One X post, one page\. Share the link in WeChat or anywhere\./);
+  assert.match(index, /One X post, one page\. Share the link anywhere \(WeChat works\)\./);
   assert.match(index, /Original content belongs to its authors/);
   assert.doesNotMatch(index, /[\u4e00-\u9fff]/);
 
@@ -80,7 +80,7 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.match(indexTemplate, /No posts yet/);
   assert.match(indexTemplate, /Unknown author/);
   const postTemplate = fs.readFileSync(path.join(root, "src", "post.njk"), "utf8");
-  assert.match(postTemplate, /No summary yet\. Add summary in the content file, then publish\./);
+  assert.match(postTemplate, /No summary yet\. Add an English summary in the content file, then publish\./);
   assert.doesNotMatch(postTemplate, /summary_zh|Chinese summary/);
   assert.match(postTemplate, /Unknown/);
   assert.match(postTemplate, /Post image/);
@@ -94,7 +94,9 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.match(css, /--radius-md:\s*8px/);
   assert.match(css, /--shadow:\s*none/);
   assert.match(css, /--measure:\s*38rem/);
-  assert.match(css, /--font-en:\s*"Iowan Old Style"/);
+  assert.match(css, /--lh-summary:\s*1\.65/);
+  assert.match(css, /--font-ui:\s*system-ui, "Segoe UI", "Helvetica Neue", Arial, sans-serif/);
+  assert.match(css, /--font-en-serif:\s*"Iowan Old Style"/);
   assert.doesNotMatch(css, /border-radius:\s*1[2-9]px/);
   assert.doesNotMatch(indexTemplate, /display:\s*grid/);
 });
