@@ -217,7 +217,21 @@ main,
 
 main { padding-block: var(--s-6); }
 
-.brand {
+.brand-lockup {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.brand-gap {
+  color: var(--muted-soft);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.brand,
+.root-link {
   color: var(--muted);
   font-size: var(--t5-size);
   font-weight: var(--t5-weight);
@@ -228,7 +242,9 @@ main { padding-block: var(--s-6); }
 }
 
 .brand:hover,
-.brand:focus-visible {
+.brand:focus-visible,
+.root-link:hover,
+.root-link:focus-visible {
   color: var(--ink);
   text-decoration: none;
 }
