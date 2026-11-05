@@ -10,7 +10,8 @@ const INPUTS = [
   "author_handle",
   "created_at",
   "full_text",
-  "summary"
+  "summary_en",
+  "summary_zh"
 ];
 
 test("ingest workflow exposes the bot contract and dispatches Pages", () => {
@@ -19,7 +20,6 @@ test("ingest workflow exposes the bot contract and dispatches Pages", () => {
   for (const key of INPUTS) {
     assert.match(ingest, new RegExp(`^ {6}${key}:$`, "m"), key);
   }
-  assert.doesNotMatch(ingest, /summary_zh/);
   assert.match(ingest, /gh workflow run pages\.yml --ref main/);
   assert.doesNotMatch(ingest, /vercel|netlify|cloudflare/i);
 });
@@ -44,5 +44,6 @@ test("readme documents the contract and the live urls", () => {
   assert.match(readme, /pathPrefix/);
   assert.match(readme, /GitHub Actions/);
   for (const key of INPUTS) assert.match(readme, new RegExp(`\`${key}\``));
-  assert.doesNotMatch(readme, /summary_zh/);
+  assert.match(readme, /summary_en/);
+  assert.match(readme, /summary_zh/);
 });

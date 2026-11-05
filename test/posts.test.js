@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { buildStoredPost, formatBeijing, loadPosts, pickSummary } from "../src/lib/posts.js";
+import { buildStoredPost, formatBeijing, loadPosts, pickSummaries } from "../src/lib/posts.js";
 
 const ID = "2117512471930167377";
 
@@ -37,7 +37,7 @@ author_name: "Ada"
 author_handle: "ada"
 created_at: "2026-01-02T00:00:00.000Z"
 original_url: "https://x.com/ada/status/${id}"
-summary: "English summary"
+summary_en: "English summary"
 images:
   - "https://example.com/keep.png"
   - "https://example.com/already.png"
@@ -51,8 +51,8 @@ See https://example.com/already.png
   assert.equal(post.author_handle, "ada");
   assert.deepEqual(post.images, ["https://example.com/keep.png"]);
   assert.match(post.full_text, /already\.png/);
-  assert.equal(post.summary, "English summary");
-  assert.equal(post.summary_zh, undefined);
+  assert.equal(post.summary_en, "English summary");
+  assert.equal(post.summary_zh, "");
   assert.equal(post.created_at_display, "2026-01-02 08:00 (Beijing time)");
 });
 
@@ -65,8 +65,18 @@ test("fills a missing title and original url", () => {
   assert.equal(post.title, "First line of the post");
   assert.equal(post.author_handle, "someone");
   assert.equal(post.original_url, "https://x.com/someone/status/123456789012345");
-  assert.equal(post.summary, "");
-  assert.equal(pickSummary({ summary: "  Preferred  ", summary_en: "Alias" }), "Preferred");
-  assert.equal(pickSummary({ summary_en: "Alias" }), "Alias");
-  assert.equal(pickSummary({ summary_zh: "Not used" }), "");
+  assert.equal(post.summary_en, "");
+  assert.equal(post.summary_zh, "");
+  assert.deepEqual(pickSummaries({ summary: "  From summary  ", summary_en: "English", summary_zh: "中文" }), {
+    summary_en: "English",
+    summary_zh: "中文"
+  });
+  assert.deepEqual(pickSummaries({ summary: "Fallback English" }), {
+    summary_en: "Fallback English",
+    summary_zh: ""
+  });
+  assert.deepEqual(pickSummaries({ summary_zh: "只有中文" }), {
+    summary_en: "",
+    summary_zh: "只有中文"
+  });
 });

@@ -112,7 +112,7 @@ function failureMessage(errors) {
   const lines = [
     "Could not fetch the original text. Stopped without writing a content file.",
     "X often blocks anonymous fetches. This workflow does not open a local browser. When the fetch fails, the caller must pass full_text.",
-    "Pass summary as well when you can.",
+    "Pass summary_en and summary_zh when you can.",
     "Attempts:"
   ];
   for (const error of errors) lines.push(`- ${error}`);
@@ -141,7 +141,8 @@ export async function runIngest({ env, contentDir, fetchImpl }) {
       author_handle: env.AUTHOR_HANDLE || fetched?.author_handle || "",
       created_at: env.CREATED_AT || fetched?.created_at || "",
       original_url: tweetUrl || fetched?.original_url || "",
-      summary: env.SUMMARY || "",
+      summary_en: env.SUMMARY_EN || env.SUMMARY || "",
+      summary_zh: env.SUMMARY_ZH || "",
       images: fetched?.images || [],
       full_text: fullText
     });

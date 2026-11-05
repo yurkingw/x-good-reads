@@ -9,16 +9,6 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
 <article>
   <h1>{{ post.title }}</h1>
 
-  <section class="summary" id="summary" lang="en" aria-labelledby="summary-heading">
-    <h2 id="summary-heading">AI summary</h2>
-    <p class="label-note">AI-generated for skimming. Not a substitute for the original.</p>
-    {% if post.summary %}
-    <div class="summary-body">{{ post.summary | renderText | safe }}</div>
-    {% else %}
-    <p class="missing">No summary yet. Add a summary in the content file, then publish.</p>
-    {% endif %}
-  </section>
-
   <section class="meta" id="meta" aria-labelledby="meta-heading">
     <h2 id="meta-heading">Source</h2>
     <dl>
@@ -46,6 +36,29 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
         <dd><a class="original-url" href="{{ post.original_url }}">Open on X</a></dd>
       </div>
     </dl>
+  </section>
+
+  <section class="summary" id="summary" aria-labelledby="summary-heading">
+    <h2 id="summary-heading">Summary</h2>
+    <p class="label-note">AI-generated for skimming. Not a substitute for the original.</p>
+    {% if post.summary_en or post.summary_zh %}
+      {% if post.summary_en and post.summary_zh %}
+      <input class="lang-input show-en" type="radio" name="summary-lang" id="summary-lang-en" checked>
+      <input class="lang-input show-zh" type="radio" name="summary-lang" id="summary-lang-zh">
+      <div class="lang-toggle">
+        <label class="opt-en" for="summary-lang-en">English</label>
+        <label class="opt-zh" for="summary-lang-zh">Chinese</label>
+      </div>
+      {% endif %}
+      {% if post.summary_en %}
+      <div class="summary-body is-en" lang="en">{{ post.summary_en | renderText | safe }}</div>
+      {% endif %}
+      {% if post.summary_zh %}
+      <div class="summary-body is-zh" lang="zh-CN">{{ post.summary_zh | renderText | safe }}</div>
+      {% endif %}
+    {% else %}
+    <p class="missing">No summary yet. Add a summary in the content file, then publish.</p>
+    {% endif %}
   </section>
 
   <section class="original" id="original" lang="en" aria-labelledby="original-heading">

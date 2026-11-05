@@ -38,8 +38,13 @@ on:
         required: false
         default: ""
         type: string
-      summary:
-        description: "English AI summary. Callers should pass this. This action does not call a summary API."
+      summary_en:
+        description: "English AI summary. Shown by default. This action does not call a summary API."
+        required: false
+        default: ""
+        type: string
+      summary_zh:
+        description: "Chinese AI summary. Optional. Readers can switch to it when both languages are stored."
         required: false
         default: ""
         type: string
@@ -86,7 +91,8 @@ jobs:
           AUTHOR_HANDLE: ${{ inputs.author_handle }}
           CREATED_AT: ${{ inputs.created_at }}
           FULL_TEXT: ${{ inputs.full_text }}
-          SUMMARY: ${{ inputs.summary }}
+          SUMMARY_EN: ${{ inputs.summary_en }}
+          SUMMARY_ZH: ${{ inputs.summary_zh }}
         run: node scripts/ingest.js
 
       - run: npm test

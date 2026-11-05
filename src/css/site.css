@@ -46,7 +46,8 @@ a { color: var(--accent); }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
 @media (prefers-reduced-motion: no-preference) {
-  a { transition: color 160ms ease; }
+  a,
+  .lang-toggle label { transition: color 160ms ease, border-color 160ms ease; }
 }
 
 .top {
@@ -158,7 +159,7 @@ h3 {
 .byline { display: block; margin: 0.28rem 0 0; }
 
 .summary {
-  margin: 0 0 1.6rem;
+  margin: 1.4rem 0 0;
   padding: 0.7rem 0.9rem 0.25rem;
   background: var(--accent-tint);
   border: 0;
@@ -167,12 +168,61 @@ h3 {
   box-shadow: var(--shadow);
 }
 
+.lang-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.lang-toggle {
+  display: flex;
+  gap: 0.9rem;
+  margin: 0 0 0.65rem;
+}
+
+.lang-toggle label {
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+}
+
+.show-en:checked ~ .lang-toggle .opt-en,
+.show-zh:checked ~ .lang-toggle .opt-zh {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.show-en:focus-visible ~ .lang-toggle .opt-en,
+.show-zh:focus-visible ~ .lang-toggle .opt-zh {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.summary:has(.show-en) .is-zh { display: none; }
+
+.show-zh:checked ~ .is-en { display: none; }
+.show-zh:checked ~ .is-zh { display: block; }
+
 .summary-body,
 .summary-body h3 {
   color: var(--ink-soft);
   font-family: var(--font-ui);
   font-size: 1rem;
   line-height: var(--lh-summary);
+}
+
+.summary-body.is-zh {
+  font-family: var(--font-ui), "PingFang SC", "Noto Sans SC", sans-serif;
 }
 
 .summary-body > :first-child,
@@ -224,7 +274,11 @@ h3 {
   overflow-wrap: anywhere;
 }
 
-.original { margin-top: 1.85rem; }
+.original {
+  margin-top: 1.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
 
 .original-body {
   color: var(--ink);

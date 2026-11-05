@@ -28,14 +28,14 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
     const file = path.join(root, "_site", "x", post.status_id, "index.html");
     assert.equal(fs.existsSync(file), true, file);
     const html = fs.readFileSync(file, "utf8");
-    const markers = ['id="summary"', 'id="meta"', 'id="original"', 'id="notice"'];
+    const markers = ['id="meta"', 'id="summary"', 'id="original"', 'id="notice"'];
     const positions = markers.map((marker) => {
       const index = html.indexOf(marker);
       assert.ok(index >= 0, marker);
       return index;
     });
     assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
-    assert.match(html, /AI summary/);
+    assert.match(html, /<h2 id="summary-heading">Summary<\/h2>/);
     assert.match(html, /AI-generated for skimming\. Not a substitute for the original\./);
     assert.match(html, /<h2 id="meta-heading">Source<\/h2>/);
     assert.match(html, /<h2 id="original-heading">Original<\/h2>/);
@@ -59,14 +59,20 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   }
 
   const sample = fs.readFileSync(path.join(root, "_site", "x", sampleId, "index.html"), "utf8");
-  const summary = sample.slice(sample.indexOf('id="summary"'), sample.indexOf('id="meta"'));
+  const summary = sample.slice(sample.indexOf('id="summary"'), sample.indexOf('id="original"'));
   const original = sample.slice(sample.indexOf('id="original"'), sample.indexOf('id="notice"'));
+  const englishSummary = summary.slice(summary.indexOf('class="summary-body is-en"'), summary.indexOf('lang="zh-CN"'));
+  const chineseSummary = summary.slice(summary.indexOf('lang="zh-CN"'));
   assert.match(summary, /<p>/);
-  assert.match(summary, /cognitive surrender/);
+  assert.match(englishSummary, /cognitive surrender/);
+  assert.match(chineseSummary, /认知投降/);
+  assert.match(sample, /id="summary-lang-en"[^>]*checked/);
+  assert.match(sample, />English</);
+  assert.match(sample, />Chinese</);
   assert.match(sample, /<time datetime="2026-11-03T07:01:29\.000Z">2026-11-03T07:01:29\.000Z<\/time>/);
   assert.match(sample, /2026-11-03 15:01 \(Beijing time\)/);
   assert.match(sample, /lang="en"/);
-  assert.doesNotMatch(sample, /[\u4e00-\u9fff]/);
+  assert.doesNotMatch(original, /[\u4e00-\u9fff]/);
   assert.match(sample, /href="https:\/\/x\.com\/addyosmani\/status\/2117512471930167377"/);
   assert.match(original, /<h3>Offloading, deferral and surrender<\/h3>/);
   assert.match(original, /Back in the day, critical thinking/);
@@ -81,7 +87,7 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.match(indexTemplate, /Unknown author/);
   const postTemplate = fs.readFileSync(path.join(root, "src", "post.njk"), "utf8");
   assert.match(postTemplate, /No summary yet\. Add a summary in the content file, then publish\./);
-  assert.doesNotMatch(postTemplate, /summary_zh|Chinese summary/);
+  assert.match(postTemplate, /post\.summary_en and post\.summary_zh/);
   assert.match(postTemplate, /Unknown/);
   assert.match(postTemplate, /Post image/);
 

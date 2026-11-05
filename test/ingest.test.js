@@ -32,7 +32,8 @@ test("does not fetch when full_text is provided", async () => {
     env: {
       STATUS_ID: ID,
       FULL_TEXT: "Hello from the caller\nhttps://example.com",
-      SUMMARY: "This is the summary",
+      SUMMARY_EN: "This is the summary",
+      SUMMARY_ZH: "这是中文摘要",
       TITLE: "A title",
       AUTHOR_NAME: "Addy Osmani",
       AUTHOR_HANDLE: "addyosmani",
@@ -49,8 +50,9 @@ test("does not fetch when full_text is provided", async () => {
   const saved = JSON.parse(fs.readFileSync(result.file, "utf8"));
   assert.equal(typeof saved.status_id, "string");
   assert.equal(saved.status_id, ID);
-  assert.equal(saved.summary, "This is the summary");
-  assert.equal(saved.summary_zh, undefined);
+  assert.equal(saved.summary_en, "This is the summary");
+  assert.equal(saved.summary_zh, "这是中文摘要");
+  assert.equal(saved.summary, undefined);
   assert.match(saved.full_text, /Hello from the caller/);
 });
 
@@ -70,7 +72,7 @@ test("uses the second mirror when the first one fails", async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-mirror-"));
   const seen = [];
   const result = await runIngest({
-    env: { TWEET_URL: `https://x.com/addyosmani/status/${ID}`, SUMMARY: "English summary" },
+    env: { TWEET_URL: `https://x.com/addyosmani/status/${ID}`, SUMMARY_ZH: "只有中文" },
     contentDir: dir,
     fetchImpl: async (url) => {
       seen.push(url);
@@ -90,8 +92,8 @@ test("uses the second mirror when the first one fails", async () => {
   });
   assert.equal(seen.length, 2);
   const saved = JSON.parse(fs.readFileSync(result.file, "utf8"));
-  assert.equal(saved.summary, "English summary");
-  assert.equal(saved.summary_zh, undefined);
+  assert.equal(saved.summary_en, "");
+  assert.equal(saved.summary_zh, "只有中文");
   assert.equal(saved.full_text, "Fetched body");
   assert.equal(saved.author_handle, "addyosmani");
   assert.equal(saved.created_at, "2026-11-03T07:01:29.000Z");
@@ -122,7 +124,7 @@ test("cli writes a file and a status id output", () => {
       GITHUB_OUTPUT: output,
       STATUS_ID: "123456789012345",
       FULL_TEXT: "CLI body",
-      SUMMARY: "CLI summary",
+      SUMMARY_EN: "CLI summary",
       AUTHOR_HANDLE: "ada"
     }
   });

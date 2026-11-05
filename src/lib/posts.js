@@ -48,15 +48,17 @@ export function formatBeijing(value) {
   return `${parts.year}-${parts.month}-${parts.day} ${hour}:${parts.minute} (Beijing time)`;
 }
 
-export function pickSummary(input) {
+function cleanText(value) {
+  if (typeof value !== "string") return "";
+  return value.replace(/\r\n/g, "\n").trim();
+}
+
+export function pickSummaries(input) {
   const source = input && typeof input === "object" ? input : {};
-  for (const key of ["summary", "summary_en"]) {
-    const value = source[key];
-    if (typeof value === "string" && value.trim()) {
-      return value.replace(/\r\n/g, "\n").trim();
-    }
-  }
-  return "";
+  return {
+    summary_en: cleanText(source.summary_en) || cleanText(source.summary),
+    summary_zh: cleanText(source.summary_zh)
+  };
 }
 
 function normalizeImages(value, fullText) {
@@ -103,7 +105,7 @@ export function buildStoredPost(input) {
     author_handle,
     created_at: normalizeTimestamp(input.created_at),
     original_url,
-    summary: pickSummary(input),
+    ...pickSummaries(input),
     images: normalizeImages(input.images, full_text),
     full_text
   };
@@ -114,7 +116,7 @@ function present(stored) {
     ...stored,
     page_url: `/x/${stored.status_id}/`,
     created_at_display: formatBeijing(stored.created_at),
-    summary_plain: stored.summary.replace(/\s+/g, " ").trim().slice(0, 180)
+    summary_plain: (stored.summary_en || stored.summary_zh).replace(/\s+/g, " ").trim().slice(0, 180)
   };
 }
 
@@ -137,6 +139,7 @@ function readSource(file) {
       original_url: data.original_url || data.url || "",
       summary: data.summary,
       summary_en: data.summary_en,
+      summary_zh: data.summary_zh,
       images: data.images || data.media || [],
       full_text: data.full_text || ""
     };
@@ -153,6 +156,7 @@ function readSource(file) {
     original_url: data.original_url || data.url || "",
     summary: data.summary,
     summary_en: data.summary_en,
+    summary_zh: data.summary_zh,
     images: data.images || [],
     full_text: parsed.content.trim() || data.full_text || ""
   };

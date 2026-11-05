@@ -2,7 +2,7 @@
 
 Turn one X post into a readable static HTML page, then send that page URL to a friend. `content/` in this repository is the only content source. The site publishes only to **GitHub Pages** (a project site).
 
-Page order is fixed: AI summary → source (author, handle, time, link to the original post) → original text → footer notice.
+Page order is fixed: the post title, then source (author, handle, time, link to the original post), then the AI summary, then the original text, then the footer notice. The summary opens in English. When both `summary_en` and `summary_zh` are stored, a control switches to Chinese.
 
 ## URLs
 
@@ -38,7 +38,8 @@ A `status_id` past JavaScript's safe integer range must be a string in JSON.
   "author_handle": "addyosmani",
   "created_at": "2026-11-03T07:01:29.000Z",
   "original_url": "https://x.com/addyosmani/status/2117512471930167377",
-  "summary": "English AI summary. It may be empty; the page will say it is not available yet.",
+  "summary_en": "English AI summary. It may be empty; the page will say it is not available yet.",
+  "summary_zh": "Chinese AI summary. Optional. The page can switch to it.",
   "images": ["https://example.com/photo.jpg"],
   "full_text": "Original text. Keep the line breaks.\n\nSecond paragraph."
 }
@@ -54,8 +55,10 @@ author_name: "Addy Osmani"
 author_handle: "addyosmani"
 created_at: "2026-11-03T07:01:29.000Z"
 original_url: "https://x.com/addyosmani/status/2117512471930167377"
-summary: |
+summary_en: |
   English summary
+summary_zh: |
+  Chinese summary
 ---
 
 Original text
@@ -63,7 +66,7 @@ Original text
 
 Do not store both `.json` and `.md` for the same id. The original text is rendered as Markdown: line breaks are kept, URLs become links, and images are shown. HTML in the original text is escaped. `https` images listed in `images` are appended after the body. Image URLs that come from X may fail to load or may expire.
 
-The summary field is `summary`, and the text is English. `full_text` stays in the post's original language.
+Store the English summary in `summary_en` and the Chinese summary in `summary_zh`. The page shows English first. A lone `summary` is treated as English. `full_text` stays in the post's original language. If only one summary language is present, that text is shown and the language control is omitted.
 
 ### Ingest with Actions
 
@@ -71,7 +74,7 @@ On the Actions page, choose the **ingest** workflow, select the **main** branch,
 
 When `full_text` is set: the workflow writes `content/x/<status_id>.json`, and after tests pass it commits that file to `main` and starts `pages` to publish. No local browser is required.
 
-When only `tweet_url` or `status_id` is set: it tries `api.fxtwitter.com`, then `api.vxtwitter.com`. If a body comes back, it is archived. If the request is blocked or there is no body, the workflow fails and does **not** write a partial file. X articles often come back as a short link only; for those posts the caller must pass `full_text`. Pass `summary` at the same time when you can. This repository's Action does not call a summary API.
+When only `tweet_url` or `status_id` is set: it tries `api.fxtwitter.com`, then `api.vxtwitter.com`. If a body comes back, it is archived. If the request is blocked or there is no body, the workflow fails and does **not** write a partial file. X articles often come back as a short link only; for those posts the caller must pass `full_text`. Pass `summary_en` and `summary_zh` at the same time when you can. This repository's Action does not call a summary API.
 
 If the body is very long and the dispatch API rejects the parameters, add the file by hand instead. A push from the default `GITHUB_TOKEN` does not trigger `on: push` again, so after a successful `ingest` the workflow dispatches `pages` once. Do not remove that step, or posts written by the bot will not show up on Pages.
 
@@ -106,9 +109,10 @@ Input keys (all strings, all optional, but at least one of `tweet_url` and `stat
 | `author_handle` | Handle, without `@` |
 | `created_at` | ISO 8601 timestamp |
 | `full_text` | Original text, kept in its original language. When this is set, nothing is fetched |
-| `summary` | English AI summary. Callers send it on this key |
+| `summary_en` | English AI summary. Shown by default |
+| `summary_zh` | Chinese AI summary. Optional. Shown when the reader switches language |
 
-The caller generates the summary and sends it as `summary`. Inputs are passed to `scripts/ingest.js` through environment variables. Do not switch this to shell expansion of `${{ inputs.full_text }}`.
+The caller generates the summaries and sends them as `summary_en` and `summary_zh`. Inputs are passed to `scripts/ingest.js` through environment variables. Do not switch this to shell expansion of `${{ inputs.full_text }}`.
 
 ```bash
 curl -sS -X POST \
@@ -129,7 +133,8 @@ curl -sS -X POST \
     "author_handle": "addyosmani",
     "created_at": "2026-11-03T07:01:29.000Z",
     "full_text": "Original text…",
-    "summary": "English summary…"
+    "summary_en": "English summary…",
+    "summary_zh": "Chinese summary…"
   }
 }
 ```
@@ -143,4 +148,4 @@ npm ci
 npm test
 ```
 
-`npm test` builds `_site/` and checks that the sample page order is summary, source, original text, then footer.
+`npm test` builds `_site/` and checks that the sample page order is source, summary, original text, then footer.
