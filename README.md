@@ -2,7 +2,7 @@
 
 Turn one X post into a readable static HTML page, then send that page URL to a friend. `content/` in this repository is the only content source. The site publishes only to **GitHub Pages** (a project site).
 
-Page order is fixed: the post title, then source (author, handle, time, link to the original post), then the AI summary, then the original text, then the footer notice. The summary opens in English. When both `summary_en` and `summary_zh` are stored, a control switches to Chinese.
+Page order is fixed: the post title, then source (author, handle, time, link to the original post), then the AI summary, then the original text, then the footer notice. The summary opens in English. When both an English summary (`summary` or `summary_en`) and `summary_zh` are stored, EN / ZH switches to Chinese.
 
 ## URLs
 
@@ -109,10 +109,11 @@ Input keys (all strings, all optional, but at least one of `tweet_url` and `stat
 | `author_handle` | Handle, without `@` |
 | `created_at` | ISO 8601 timestamp |
 | `full_text` | Original text, kept in its original language. When this is set, nothing is fetched |
+| `summary` | English AI summary. Alias of `summary_en` when `summary_en` is empty |
 | `summary_en` | English AI summary. Shown by default |
-| `summary_zh` | Chinese AI summary. Optional. Shown when the reader switches language |
+| `summary_zh` | Chinese AI summary. Optional. Shown when the reader switches to ZH |
 
-The caller generates the summaries and sends them as `summary_en` and `summary_zh`. Inputs are passed to `scripts/ingest.js` through environment variables. Do not switch this to shell expansion of `${{ inputs.full_text }}`.
+The caller generates the summaries and sends English on `summary_en` (or `summary`) and Chinese on `summary_zh`. Inputs are passed to `scripts/ingest.js` through environment variables. Do not switch this to shell expansion of `${{ inputs.full_text }}`.
 
 ```bash
 curl -sS -X POST \

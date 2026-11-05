@@ -38,6 +38,11 @@ on:
         required: false
         default: ""
         type: string
+      summary:
+        description: "English AI summary alias. Used only when summary_en is empty."
+        required: false
+        default: ""
+        type: string
       summary_en:
         description: "English AI summary. Shown by default. This action does not call a summary API."
         required: false
@@ -91,6 +96,7 @@ jobs:
           AUTHOR_HANDLE: ${{ inputs.author_handle }}
           CREATED_AT: ${{ inputs.created_at }}
           FULL_TEXT: ${{ inputs.full_text }}
+          SUMMARY: ${{ inputs.summary }}
           SUMMARY_EN: ${{ inputs.summary_en }}
           SUMMARY_ZH: ${{ inputs.summary_zh }}
         run: node scripts/ingest.js
