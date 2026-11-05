@@ -67,6 +67,11 @@
   <footer class="notice" id="notice">
     <p>{{ site.footerNotice }}</p>
   </footer>
+  <button type="button" class="back-to-top" aria-label="Back to top" hidden aria-hidden="true">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+      <path d="M3.5 10.25 8 5.75 12.5 10.25" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
   <script>
     (function () {
       var root = document.documentElement;
@@ -95,6 +100,51 @@
           apply(button.getAttribute("data-theme-set"), true);
         });
       });
+    })();
+  </script>
+  <script>
+    (function () {
+      var button = document.querySelector(".back-to-top");
+      if (!button) return;
+
+      function prefersReducedMotion() {
+        return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      }
+
+      function sync() {
+        var visible = window.scrollY >= window.innerHeight;
+        if (visible) {
+          var reveal = button.hidden || !button.classList.contains("is-visible");
+          button.hidden = false;
+          button.setAttribute("aria-hidden", "false");
+          if (reveal && !prefersReducedMotion()) void button.offsetWidth;
+          button.classList.add("is-visible");
+          return;
+        }
+        button.classList.remove("is-visible");
+        button.setAttribute("aria-hidden", "true");
+        if (prefersReducedMotion()) button.hidden = true;
+      }
+
+      button.addEventListener("transitionend", function (event) {
+        if (event.propertyName !== "opacity") return;
+        if (!button.classList.contains("is-visible")) button.hidden = true;
+      });
+
+      button.addEventListener("click", function () {
+        window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+      });
+
+      var frame = 0;
+      window.addEventListener("scroll", function () {
+        if (frame) return;
+        frame = window.requestAnimationFrame(function () {
+          frame = 0;
+          sync();
+        });
+      }, { passive: true });
+      window.addEventListener("resize", sync);
+      sync();
     })();
   </script>
 </body>

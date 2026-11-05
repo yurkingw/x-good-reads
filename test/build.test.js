@@ -26,6 +26,7 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.doesNotMatch(index, /Share the link anywhere \(/);
   assert.match(index, /2026-11-03 07:01 UTC/);
   assert.match(index, /aria-label="Color theme"/);
+  assert.match(index, /<button type="button" class="back-to-top" aria-label="Back to top" hidden/);
   assert.match(index, /data-theme-set="system"[^>]*aria-pressed="true"[^>]*>Auto<\/button>/);
   assert.match(index, /data-theme-set="day"[^>]*>Day<\/button>/);
   assert.match(index, /data-theme-set="night"[^>]*>Night<\/button>/);
@@ -115,6 +116,7 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(sample, /<time datetime="2026-11-03T07:01:29\.000Z">2026-11-03 07:01 UTC<\/time>/);
   assert.doesNotMatch(sample, />2026-11-03T07:01:29\.000Z</);
   assert.match(sample, /aria-label="Color theme"/);
+  assert.match(sample, /<button type="button" class="back-to-top" aria-label="Back to top" hidden/);
   assert.match(sample, /data-theme-set="system"[^>]*aria-pressed="true"/);
   assert.match(sample, /lang="en"/);
   assert.doesNotMatch(original, /[\u4e00-\u9fff]/);
