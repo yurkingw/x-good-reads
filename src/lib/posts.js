@@ -1,12 +1,81 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { baseUrl } from "../../site.config.js";
 
 const STATUS_ID = /^\d{5,25}$/;
 const HANDLE = /^[A-Za-z0-9_]{1,30}$/;
 
 const SITE_MEDIA = /^\/media\/x\/(\d{5,25})\/([A-Za-z0-9][A-Za-z0-9._-]{0,120})$/;
 const BLOCKED_MEDIA_HOST = /(^|\.)twimg\.com$/i;
+const OG_RASTER = /\.(jpe?g|png|gif|webp)$/i;
+
+export const DEFAULT_OG_IMAGE_PATH = "/media/site/og-default.jpg";
+
+export function absoluteSiteUrl(sitePath, origin = baseUrl) {
+  const base = String(origin || "").replace(/\/+$/, "");
+  const rel = String(sitePath || "").replace(/^\/+/, "");
+  if (!base || !rel) return "";
+  return `${base}/${rel}`;
+}
+
+function siteImagePath(value, statusId) {
+  const text = String(value ?? "").trim();
+  const match = SITE_MEDIA.exec(text);
+  if (!match || (statusId && match[1] !== statusId)) return "";
+  if (!OG_RASTER.test(match[2])) return "";
+  return text;
+}
+
+function gifStillPath(gifPath, statusId, knownImages, mediaRoot) {
+  const name = gifPath.split("/").pop() || "";
+  const match = /^gif-(\d+)\.gif$/i.exec(name);
+  if (!match || !statusId) return "";
+  const stillName = `gif-poster-${match[1]}.jpg`;
+  const still = `/media/x/${statusId}/${stillName}`;
+  if (knownImages.includes(still)) return still;
+  const root = mediaRoot || path.join(process.cwd(), "media", "x");
+  if (fs.existsSync(path.join(root, statusId, stillName))) return still;
+  return "";
+}
+
+function posterOnDisk(statusId, mediaRoot) {
+  if (!STATUS_ID.test(statusId)) return "";
+  const root = mediaRoot || path.join(process.cwd(), "media", "x");
+  if (fs.existsSync(path.join(root, statusId, "poster.jpg"))) {
+    return `/media/x/${statusId}/poster.jpg`;
+  }
+  return "";
+}
+
+export function pickOgImagePath(post, options = {}) {
+  const statusId = String(post?.status_id ?? "").trim();
+  const images = (Array.isArray(post?.images) ? post.images : [])
+    .map((item) => siteImagePath(item, statusId))
+    .filter(Boolean);
+  const videoPosters = new Set(
+    (Array.isArray(post?.videos) ? post.videos : [])
+      .map((video) => siteImagePath(video?.poster, statusId))
+      .filter((href) => href && !/\/gif-poster-\d+\.jpe?g$/i.test(href))
+  );
+  const first = images.find((href) => !videoPosters.has(href)) || "";
+  if (first) {
+    if (/\.gif$/i.test(first)) {
+      const still = gifStillPath(first, statusId, images, options.mediaRoot);
+      if (still) return still;
+    }
+    return first;
+  }
+  const listedPoster = (Array.isArray(post?.videos) ? post.videos : [])
+    .map((video) => siteImagePath(video?.poster, statusId))
+    .find(Boolean);
+  if (listedPoster) return listedPoster;
+  if (Array.isArray(post?.videos) && post.videos.length) {
+    const onDisk = posterOnDisk(statusId, options.mediaRoot);
+    if (onDisk) return onDisk;
+  }
+  return DEFAULT_OG_IMAGE_PATH;
+}
 
 export function safeHttpUrl(value) {
   try {
@@ -170,7 +239,8 @@ function present(stored) {
     display_images: (stored.images || []).filter((image) => !posters.has(image)),
     page_url: `/x/${stored.status_id}/`,
     created_at_display: formatUtc(stored.created_at),
-    summary_plain: (stored.summary_en || stored.summary_zh).replace(/\s+/g, " ").trim().slice(0, 180)
+    summary_plain: (stored.summary_en || stored.summary_zh).replace(/\s+/g, " ").trim().slice(0, 180),
+    og_image: absoluteSiteUrl(pickOgImagePath(stored))
   };
 }
 

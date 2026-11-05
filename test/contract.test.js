@@ -60,4 +60,9 @@ test("readme documents the contract and the live urls", () => {
   assert.match(readme, /hotlink/);
   assert.match(readme, /does not backfill/);
   assert.match(readme, /2117762468177183064/);
+  assert.match(readme, /og:image/);
+  assert.match(readme, /summary_large_image/);
+  assert.match(readme, /media\/site\/og-default\.jpg/);
+  assert.match(readme, /videos\[0\]\.poster/);
+  assert.match(readme, /gif-poster-/);
 });

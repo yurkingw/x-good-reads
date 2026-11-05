@@ -37,6 +37,14 @@
   <meta property="og:type" content="website">
   {% endif %}
   <meta property="og:locale" content="en_US">
+  {% set share_title = post.title if post else site.title %}
+  {% set share_description = post.summary_plain if (post and post.summary_plain) else site.description %}
+  {% set share_image = post.og_image if (post and post.og_image) else site.ogImage %}
+  <meta property="og:image" content="{{ share_image }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ share_title }}">
+  <meta name="twitter:description" content="{{ share_description }}">
+  <meta name="twitter:image" content="{{ share_image }}">
   <link rel="icon" href="{{ "/favicon.svg" | url }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ "/css/site.css" | url }}">
 </head>
