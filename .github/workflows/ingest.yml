@@ -43,11 +43,6 @@ on:
         required: false
         default: ""
         type: string
-      summary_zh:
-        description: "Legacy alias for summary. Used only when summary is empty. New callers should send summary."
-        required: false
-        default: ""
-        type: string
 
 # contents: write — push content/x/<id>.json to main.
 # actions: write — dispatch pages.yml after that push.
@@ -92,7 +87,6 @@ jobs:
           CREATED_AT: ${{ inputs.created_at }}
           FULL_TEXT: ${{ inputs.full_text }}
           SUMMARY: ${{ inputs.summary }}
-          SUMMARY_ZH: ${{ inputs.summary_zh }}
         run: node scripts/ingest.js
 
       - run: npm test

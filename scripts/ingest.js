@@ -142,7 +142,6 @@ export async function runIngest({ env, contentDir, fetchImpl }) {
       created_at: env.CREATED_AT || fetched?.created_at || "",
       original_url: tweetUrl || fetched?.original_url || "",
       summary: env.SUMMARY || "",
-      summary_zh: env.SUMMARY_ZH || "",
       images: fetched?.images || [],
       full_text: fullText
     });

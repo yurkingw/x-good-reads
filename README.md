@@ -63,7 +63,7 @@ Original text
 
 Do not store both `.json` and `.md` for the same id. The original text is rendered as Markdown: line breaks are kept, URLs become links, and images are shown. HTML in the original text is escaped. `https` images listed in `images` are appended after the body. Image URLs that come from X may fail to load or may expire.
 
-The summary field is `summary`, and the text should be English. The site still reads a legacy `summary_zh` (and `summary_en`) when `summary` is empty, so older files keep working. New files should store `summary` only. `full_text` stays in the post's original language.
+The summary field is `summary`, and the text is English. `full_text` stays in the post's original language.
 
 ### Ingest with Actions
 
@@ -106,8 +106,7 @@ Input keys (all strings, all optional, but at least one of `tweet_url` and `stat
 | `author_handle` | Handle, without `@` |
 | `created_at` | ISO 8601 timestamp |
 | `full_text` | Original text, kept in its original language. When this is set, nothing is fetched |
-| `summary` | English AI summary. This is the key callers should use |
-| `summary_zh` | Legacy alias. Used only when `summary` is empty, then stored as `summary` |
+| `summary` | English AI summary. Callers send it on this key |
 
 The caller generates the summary and sends it as `summary`. Inputs are passed to `scripts/ingest.js` through environment variables. Do not switch this to shell expansion of `${{ inputs.full_text }}`.
 

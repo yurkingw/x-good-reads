@@ -33,7 +33,6 @@ test("does not fetch when full_text is provided", async () => {
       STATUS_ID: ID,
       FULL_TEXT: "Hello from the caller\nhttps://example.com",
       SUMMARY: "This is the summary",
-      SUMMARY_ZH: "Legacy summary that must lose",
       TITLE: "A title",
       AUTHOR_NAME: "Addy Osmani",
       AUTHOR_HANDLE: "addyosmani",
@@ -71,7 +70,7 @@ test("uses the second mirror when the first one fails", async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-mirror-"));
   const seen = [];
   const result = await runIngest({
-    env: { TWEET_URL: `https://x.com/addyosmani/status/${ID}`, SUMMARY_ZH: "Legacy summary" },
+    env: { TWEET_URL: `https://x.com/addyosmani/status/${ID}`, SUMMARY: "English summary" },
     contentDir: dir,
     fetchImpl: async (url) => {
       seen.push(url);
@@ -91,7 +90,7 @@ test("uses the second mirror when the first one fails", async () => {
   });
   assert.equal(seen.length, 2);
   const saved = JSON.parse(fs.readFileSync(result.file, "utf8"));
-  assert.equal(saved.summary, "Legacy summary");
+  assert.equal(saved.summary, "English summary");
   assert.equal(saved.summary_zh, undefined);
   assert.equal(saved.full_text, "Fetched body");
   assert.equal(saved.author_handle, "addyosmani");

@@ -50,7 +50,7 @@ export function formatBeijing(value) {
 
 export function pickSummary(input) {
   const source = input && typeof input === "object" ? input : {};
-  for (const key of ["summary", "summary_en", "summary_zh"]) {
+  for (const key of ["summary", "summary_en"]) {
     const value = source[key];
     if (typeof value === "string" && value.trim()) {
       return value.replace(/\r\n/g, "\n").trim();
@@ -137,7 +137,6 @@ function readSource(file) {
       original_url: data.original_url || data.url || "",
       summary: data.summary,
       summary_en: data.summary_en,
-      summary_zh: data.summary_zh,
       images: data.images || data.media || [],
       full_text: data.full_text || ""
     };
@@ -154,7 +153,6 @@ function readSource(file) {
     original_url: data.original_url || data.url || "",
     summary: data.summary,
     summary_en: data.summary_en,
-    summary_zh: data.summary_zh,
     images: data.images || [],
     full_text: parsed.content.trim() || data.full_text || ""
   };

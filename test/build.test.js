@@ -80,7 +80,7 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.match(indexTemplate, /No posts yet/);
   assert.match(indexTemplate, /Unknown author/);
   const postTemplate = fs.readFileSync(path.join(root, "src", "post.njk"), "utf8");
-  assert.match(postTemplate, /No summary yet\. Add an English summary in the content file, then publish\./);
+  assert.match(postTemplate, /No summary yet\. Add a summary in the content file, then publish\./);
   assert.doesNotMatch(postTemplate, /summary_zh|Chinese summary/);
   assert.match(postTemplate, /Unknown/);
   assert.match(postTemplate, /Post image/);
