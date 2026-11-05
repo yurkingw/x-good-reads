@@ -45,7 +45,18 @@ export function formatBeijing(value) {
       .map((part) => [part.type, part.value])
   );
   const hour = parts.hour === "24" ? "00" : parts.hour;
-  return `${parts.year}-${parts.month}-${parts.day} ${hour}:${parts.minute}（北京时间）`;
+  return `${parts.year}-${parts.month}-${parts.day} ${hour}:${parts.minute} (Beijing time)`;
+}
+
+export function pickSummary(input) {
+  const source = input && typeof input === "object" ? input : {};
+  for (const key of ["summary", "summary_en", "summary_zh"]) {
+    const value = source[key];
+    if (typeof value === "string" && value.trim()) {
+      return value.replace(/\r\n/g, "\n").trim();
+    }
+  }
+  return "";
 }
 
 function normalizeImages(value, fullText) {
@@ -62,23 +73,23 @@ function normalizeImages(value, fullText) {
 export function buildStoredPost(input) {
   const status_id = String(input.status_id ?? "").trim();
   if (!STATUS_ID.test(status_id)) {
-    throw new Error("status_id 必须是 5 到 25 位数字，并且要写成字符串");
+    throw new Error("status_id must be a 5- to 25-digit string");
   }
   const full_text = String(input.full_text ?? "").replace(/\r\n/g, "\n").trim();
-  if (!full_text) throw new Error("full_text 不能为空");
+  if (!full_text) throw new Error("full_text must not be empty");
 
   const author_handle = String(input.author_handle ?? "").trim().replace(/^@/, "");
   const author_name = String(input.author_name ?? "").trim();
   let title = String(input.title ?? "").replace(/\s+/g, " ").trim();
   if (!title) {
     const line = full_text.split("\n").map((item) => item.trim()).find(Boolean) || "";
-    title = line.replace(/^#{1,6}\s*/, "").slice(0, 80) || `帖子 ${status_id}`;
+    title = line.replace(/^#{1,6}\s*/, "").slice(0, 80) || `Post ${status_id}`;
   }
 
   let original_url = "";
   if (input.original_url) {
     original_url = safeHttpUrl(input.original_url);
-    if (!original_url) throw new Error("original_url 必须是 http 或 https 链接");
+    if (!original_url) throw new Error("original_url must be an http or https URL");
   } else if (HANDLE.test(author_handle)) {
     original_url = `https://x.com/${author_handle}/status/${status_id}`;
   } else {
@@ -92,7 +103,7 @@ export function buildStoredPost(input) {
     author_handle,
     created_at: normalizeTimestamp(input.created_at),
     original_url,
-    summary_zh: String(input.summary_zh ?? "").replace(/\r\n/g, "\n").trim(),
+    summary: pickSummary(input),
     images: normalizeImages(input.images, full_text),
     full_text
   };
@@ -103,7 +114,7 @@ function present(stored) {
     ...stored,
     page_url: `/x/${stored.status_id}/`,
     created_at_display: formatBeijing(stored.created_at),
-    summary_plain: stored.summary_zh.replace(/\s+/g, " ").trim().slice(0, 180)
+    summary_plain: stored.summary.replace(/\s+/g, " ").trim().slice(0, 180)
   };
 }
 
@@ -113,7 +124,7 @@ function readSource(file) {
     const token = raw.match(/"status_id"\s*:\s*([^,\n}]+)/);
     if (token && !token[1].trim().startsWith('"')) {
       throw new Error(
-        `${path.basename(file)}: status_id 必须写成 JSON 字符串，例如 "2117512471930167377"。这条 ID 超过 JS 安全整数，写成数字会丢精度。`
+        `${path.basename(file)}: status_id must be a JSON string, for example "2117512471930167377". This id is larger than Number.MAX_SAFE_INTEGER, so a JSON number would lose precision.`
       );
     }
     const data = JSON.parse(raw);
@@ -124,7 +135,9 @@ function readSource(file) {
       author_handle: data.author_handle || data.author?.username || data.author?.screen_name || "",
       created_at: data.created_at,
       original_url: data.original_url || data.url || "",
-      summary_zh: data.summary_zh || "",
+      summary: data.summary,
+      summary_en: data.summary_en,
+      summary_zh: data.summary_zh,
       images: data.images || data.media || [],
       full_text: data.full_text || ""
     };
@@ -139,7 +152,9 @@ function readSource(file) {
     author_handle: data.author_handle || data.author?.username || "",
     created_at: data.created_at,
     original_url: data.original_url || data.url || "",
-    summary_zh: data.summary_zh || "",
+    summary: data.summary,
+    summary_en: data.summary_en,
+    summary_zh: data.summary_zh,
     images: data.images || [],
     full_text: parsed.content.trim() || data.full_text || ""
   };
@@ -157,10 +172,10 @@ export function loadPosts(dir = path.join(process.cwd(), "content", "x")) {
     const base = name.replace(/\.(json|md)$/, "");
     const stored = buildStoredPost(readSource(file));
     if (stored.status_id !== base) {
-      throw new Error(`${name}: 文件名必须与 status_id 一致（当前解析为 ${stored.status_id}）。长数字请加引号。`);
+      throw new Error(`${name}: filename must match status_id (parsed as ${stored.status_id}). Quote long numbers.`);
     }
     if (seen.has(stored.status_id)) {
-      throw new Error(`${name}: status_id ${stored.status_id} 与 ${seen.get(stored.status_id)} 重复`);
+      throw new Error(`${name}: status_id ${stored.status_id} duplicates ${seen.get(stored.status_id)}`);
     }
     seen.set(stored.status_id, name);
     posts.push(present(stored));

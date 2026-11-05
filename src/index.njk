@@ -3,14 +3,14 @@ layout: base.njk
 permalink: /
 ---
 <h1>{{ site.title }}</h1>
-<p class="lede">X readable archive。一条帖子保存成一页，打开后把这个页面地址发给微信好友即可。</p>
+<p class="lede">One post, one page. Open it, then send that page URL to a friend.</p>
 {% if posts.length %}
 <ul class="index">
   {% for post in posts %}
   <li>
     <a href="{{ post.page_url | url }}">{{ post.title }}</a>
     <p class="byline">
-      {{ post.author_name or "未知作者" }}
+      {{ post.author_name or "Unknown author" }}
       {% if post.author_handle %} · @{{ post.author_handle }}{% endif %}
       {% if post.created_at %} · <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time>{% endif %}
     </p>
@@ -18,5 +18,5 @@ permalink: /
   {% endfor %}
 </ul>
 {% else %}
-<p>还没有存档。</p>
+<p>No posts yet.</p>
 {% endif %}

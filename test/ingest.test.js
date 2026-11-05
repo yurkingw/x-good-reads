@@ -21,7 +21,7 @@ function jsonResponse(body, status = 200) {
 test("resolveStatusId accepts either input and rejects a mismatch", () => {
   assert.equal(resolveStatusId(ID, ""), ID);
   assert.equal(resolveStatusId("", `https://x.com/addyosmani/status/${ID}`), ID);
-  assert.throws(() => resolveStatusId("123456789012345", `https://x.com/a/status/${ID}`), /不一致/);
+  assert.throws(() => resolveStatusId("123456789012345", `https://x.com/a/status/${ID}`), /does not match/);
   assert.throws(() => resolveStatusId("", "https://x.com/addyosmani"), /status_id/);
 });
 
@@ -32,7 +32,8 @@ test("does not fetch when full_text is provided", async () => {
     env: {
       STATUS_ID: ID,
       FULL_TEXT: "Hello from the caller\nhttps://example.com",
-      SUMMARY_ZH: "这是摘要",
+      SUMMARY: "This is the summary",
+      SUMMARY_ZH: "Legacy summary that must lose",
       TITLE: "A title",
       AUTHOR_NAME: "Addy Osmani",
       AUTHOR_HANDLE: "addyosmani",
@@ -49,7 +50,8 @@ test("does not fetch when full_text is provided", async () => {
   const saved = JSON.parse(fs.readFileSync(result.file, "utf8"));
   assert.equal(typeof saved.status_id, "string");
   assert.equal(saved.status_id, ID);
-  assert.equal(saved.summary_zh, "这是摘要");
+  assert.equal(saved.summary, "This is the summary");
+  assert.equal(saved.summary_zh, undefined);
   assert.match(saved.full_text, /Hello from the caller/);
 });
 
@@ -61,7 +63,7 @@ test("fetch failure writes nothing", async () => {
     fetchImpl: async () => {
       throw new Error("blocked");
     }
-  }), /没有写入内容文件/);
+  }), /without writing a content file/);
   assert.equal(fs.readdirSync(dir).length, 0);
 });
 
@@ -69,7 +71,7 @@ test("uses the second mirror when the first one fails", async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "xgr-mirror-"));
   const seen = [];
   const result = await runIngest({
-    env: { TWEET_URL: `https://x.com/addyosmani/status/${ID}`, SUMMARY_ZH: "摘要" },
+    env: { TWEET_URL: `https://x.com/addyosmani/status/${ID}`, SUMMARY_ZH: "Legacy summary" },
     contentDir: dir,
     fetchImpl: async (url) => {
       seen.push(url);
@@ -89,6 +91,8 @@ test("uses the second mirror when the first one fails", async () => {
   });
   assert.equal(seen.length, 2);
   const saved = JSON.parse(fs.readFileSync(result.file, "utf8"));
+  assert.equal(saved.summary, "Legacy summary");
+  assert.equal(saved.summary_zh, undefined);
   assert.equal(saved.full_text, "Fetched body");
   assert.equal(saved.author_handle, "addyosmani");
   assert.equal(saved.created_at, "2026-11-03T07:01:29.000Z");
@@ -119,7 +123,7 @@ test("cli writes a file and a status id output", () => {
       GITHUB_OUTPUT: output,
       STATUS_ID: "123456789012345",
       FULL_TEXT: "CLI body",
-      SUMMARY_ZH: "命令行摘要",
+      SUMMARY: "CLI summary",
       AUTHOR_HANDLE: "ada"
     }
   });

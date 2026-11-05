@@ -49,11 +49,11 @@ export function resolveStatusId(statusId, tweetUrl) {
   const fromInput = String(statusId || "").trim();
   const fromUrl = (String(tweetUrl || "").match(/status(?:es)?\/(\d{5,25})/) || [])[1] || "";
   if (fromInput && fromUrl && fromInput !== fromUrl) {
-    throw new IngestError(`status_id（${fromInput}）与 tweet_url 里的 id（${fromUrl}）不一致。`);
+    throw new IngestError(`status_id (${fromInput}) does not match the id in tweet_url (${fromUrl}).`);
   }
   const id = fromInput || fromUrl;
   if (!/^\d{5,25}$/.test(id)) {
-    throw new IngestError("请提供 status_id，或提供包含 /status/<数字> 的 tweet_url。");
+    throw new IngestError("Provide a status_id, or a tweet_url that contains /status/<digits>.");
   }
   return id;
 }
@@ -94,15 +94,15 @@ export async function bestEffortFetch(statusId, fetchImpl) {
         signal: AbortSignal.timeout(8000)
       });
       if (!response.ok) {
-        errors.push(`${url} 返回 HTTP ${response.status}`);
+        errors.push(`${url} returned HTTP ${response.status}`);
         continue;
       }
       const post = pickFetchedPost(await response.json());
       if (post) return { post, errors };
-      errors.push(`${url} 没有返回可用正文`);
+      errors.push(`${url} did not return usable text`);
     } catch (error) {
-      const reason = error?.name === "TimeoutError" ? "超时" : (error?.message || String(error));
-      errors.push(`${url} 失败：${reason}`);
+      const reason = error?.name === "TimeoutError" ? "timed out" : (error?.message || String(error));
+      errors.push(`${url} failed: ${reason}`);
     }
   }
   return { post: null, errors };
@@ -110,10 +110,10 @@ export async function bestEffortFetch(statusId, fetchImpl) {
 
 function failureMessage(errors) {
   const lines = [
-    "无法取得原文，已停止，没有写入内容文件。",
-    "X 经常拦截匿名抓取。本工作流不打开本机浏览器；抓取失败时，调用方必须传入 full_text。",
-    "建议同时传入 summary_zh。",
-    "尝试记录："
+    "Could not fetch the original text. Stopped without writing a content file.",
+    "X often blocks anonymous fetches. This workflow does not open a local browser. When the fetch fails, the caller must pass full_text.",
+    "Pass summary as well when you can.",
+    "Attempts:"
   ];
   for (const error of errors) lines.push(`- ${error}`);
   return lines.join("\n");
@@ -128,7 +128,7 @@ export async function runIngest({ env, contentDir, fetchImpl }) {
     if (!result.post) throw new IngestError(failureMessage(result.errors));
     fetched = result.post;
     fullText = fetched.full_text;
-    console.log("未提供 full_text，已使用尽力抓取的正文。X 文章经常只有链接，抓到的内容请核对。");
+    console.log("No full_text was provided. Using best-effort fetched text. X articles often return only a link; check what was captured.");
   }
 
   const tweetUrl = safeHttpUrl(env.TWEET_URL);
@@ -141,6 +141,7 @@ export async function runIngest({ env, contentDir, fetchImpl }) {
       author_handle: env.AUTHOR_HANDLE || fetched?.author_handle || "",
       created_at: env.CREATED_AT || fetched?.created_at || "",
       original_url: tweetUrl || fetched?.original_url || "",
+      summary: env.SUMMARY || "",
       summary_zh: env.SUMMARY_ZH || "",
       images: fetched?.images || [],
       full_text: fullText
@@ -152,7 +153,7 @@ export async function runIngest({ env, contentDir, fetchImpl }) {
   const root = path.resolve(contentDir);
   const file = path.resolve(root, `${stored.status_id}.json`);
   if (!file.startsWith(`${root}${path.sep}`)) {
-    throw new IngestError("拒绝写入内容目录之外的路径");
+    throw new IngestError("Refusing to write a path outside the content directory");
   }
   fs.mkdirSync(root, { recursive: true });
   fs.writeFileSync(file, `${JSON.stringify(stored, null, 2)}\n`);
@@ -171,7 +172,7 @@ if (isCli()) {
     contentDir,
     fetchImpl: globalThis.fetch
   }).then((result) => {
-    console.log(`已写入 ${path.relative(process.cwd(), result.file) || result.file}`);
+    console.log(`Wrote ${path.relative(process.cwd(), result.file) || result.file}`);
     if (process.env.GITHUB_OUTPUT) {
       fs.appendFileSync(process.env.GITHUB_OUTPUT, `status_id=${result.status_id}\n`);
     }

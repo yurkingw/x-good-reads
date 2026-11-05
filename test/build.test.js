@@ -19,7 +19,10 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.match(index, /href="\/x-good-reads\/css\/site\.css"/);
   assert.match(index, new RegExp(`href="/x-good-reads/x/${sampleId}/"`));
   assert.match(index, /Critical thinking when agents do the work/);
-  assert.match(index, /原文版权归原作者/);
+  assert.match(index, /X Readable Archive/);
+  assert.match(index, /One post, one page/);
+  assert.match(index, /The original text belongs to its author/);
+  assert.doesNotMatch(index, /[\u4e00-\u9fff]/);
 
   for (const post of loadPosts()) {
     const file = path.join(root, "_site", "x", post.status_id, "index.html");
@@ -32,8 +35,10 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
       return index;
     });
     assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
-    assert.match(html, /AI 摘要/);
-    assert.match(html, /本段由 AI 生成/);
+    assert.match(html, /AI summary/);
+    assert.match(html, /Generated to help you skim/);
+    assert.match(html, /<h2 id="meta-heading">Source<\/h2>/);
+    assert.match(html, /<h2 id="original-heading">Original text<\/h2>/);
     assert.ok(html.includes(footerNotice));
     assert.ok(html.includes(`href="${post.original_url}"`));
     assert.match(html, /href="\/x-good-reads\/css\/site\.css"/);
@@ -52,9 +57,11 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   const summary = sample.slice(sample.indexOf('id="summary"'), sample.indexOf('id="meta"'));
   const original = sample.slice(sample.indexOf('id="original"'), sample.indexOf('id="notice"'));
   assert.match(summary, /<p>/);
-  assert.match(summary, /认知投降/);
+  assert.match(summary, /cognitive surrender/);
   assert.match(sample, /<time datetime="2026-11-03T07:01:29\.000Z">2026-11-03T07:01:29\.000Z<\/time>/);
-  assert.match(sample, /2026-11-03 15:01（北京时间）/);
+  assert.match(sample, /2026-11-03 15:01 \(Beijing time\)/);
+  assert.match(sample, /lang="en"/);
+  assert.doesNotMatch(sample, /[\u4e00-\u9fff]/);
   assert.match(sample, /href="https:\/\/x\.com\/addyosmani\/status\/2117512471930167377"/);
   assert.match(original, /<h3>Offloading, deferral and surrender<\/h3>/);
   assert.match(original, /Back in the day, critical thinking/);
@@ -63,4 +70,11 @@ test("static build matches the archive page contract", { timeout: 60_000 }, () =
   assert.equal(fs.existsSync(path.join(root, "_site", "css", "site.css")), true);
   assert.match(sample, /href="\/x-good-reads\/favicon\.svg"/);
   assert.equal(fs.existsSync(path.join(root, "_site", "favicon.svg")), true);
+
+  const indexTemplate = fs.readFileSync(path.join(root, "src", "index.njk"), "utf8");
+  assert.match(indexTemplate, /No posts yet/);
+  assert.match(indexTemplate, /Unknown author/);
+  const postTemplate = fs.readFileSync(path.join(root, "src", "post.njk"), "utf8");
+  assert.match(postTemplate, /No summary yet/);
+  assert.match(postTemplate, /Unknown/);
 });

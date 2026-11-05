@@ -10,6 +10,7 @@ const INPUTS = [
   "author_handle",
   "created_at",
   "full_text",
+  "summary",
   "summary_zh"
 ];
 
