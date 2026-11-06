@@ -7,7 +7,13 @@
   <script>
     (function () {
       try {
-        var mode = localStorage.getItem("xgr-theme");
+        var mode = localStorage.getItem("ygh-theme");
+        if (mode !== "day" && mode !== "night" && mode !== "system") {
+          mode = localStorage.getItem("xgr-theme");
+          if (mode === "day" || mode === "night" || mode === "system") {
+            localStorage.setItem("ygh-theme", mode);
+          }
+        }
         if (mode === "day" || mode === "night") {
           document.documentElement.setAttribute("data-theme", mode);
         }
@@ -71,20 +77,22 @@
   <footer class="notice" id="notice">
     <p>{{ site.footerNotice }}</p>
   </footer>
-  <button type="button" class="back-to-top" aria-label="Back to top" hidden aria-hidden="true">
-    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
-      <path d="M3.5 10.25 8 5.75 12.5 10.25" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
+  <button type="button" class="back-to-top" aria-label="回顶" hidden aria-hidden="true">回顶</button>
   <script>
     (function () {
       var root = document.documentElement;
-      var storageKey = "xgr-theme";
+      var storageKey = "ygh-theme";
+      var legacyKey = "xgr-theme";
       var buttons = document.querySelectorAll(".theme-switch button[data-theme-set]");
       function read() {
         try {
           var mode = localStorage.getItem(storageKey);
           if (mode === "day" || mode === "night" || mode === "system") return mode;
+          var legacy = localStorage.getItem(legacyKey);
+          if (legacy === "day" || legacy === "night" || legacy === "system") {
+            localStorage.setItem(storageKey, legacy);
+            return legacy;
+          }
         } catch (e) {}
         return "system";
       }

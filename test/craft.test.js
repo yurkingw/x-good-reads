@@ -39,7 +39,7 @@ test("spacing uses only the eight-step scale", () => {
     assert.match(css, new RegExp(`${token}:\\s*${value}`));
   }
   assert.match(css, /--pad-x:\s*var\(--s-4\)/);
-  assert.match(css, /max-width:\s*380px[\s\S]*?--pad-x:\s*var\(--s-3\)/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?--pad-x:\s*var\(--s-3\)/);
 
   const rem = [...css.matchAll(/(\d*\.\d+|\d+)rem/g)].map((match) => match[1]);
   assert.deepEqual(rem, ["36", "40"]);
@@ -99,29 +99,35 @@ test("type scale is six roles with a real summary/original split", () => {
 
 test("day and night tokens move together", () => {
   const day = {
-    "--bg": "#ffffff",
-    "--surface": "#fafafa",
-    "--surface-soft": "#f7f7f7",
+    "--bg": "#f7f7f8",
+    "--surface": "#ffffff",
+    "--surface-soft": "#f0f0f1",
     "--ink": "#0a0a0a",
     "--ink-soft": "#2e2e2e",
     "--muted": "#6b6b6b",
     "--muted-soft": "#8a8a8a",
-    "--line": "#ebebeb",
-    "--line-strong": "#dcdcdc",
-    "--accent": "#0a0a0a",
-    "--hover-tint": "rgba(0,0,0,0.03)"
+    "--line": "#e6e6e8",
+    "--line-strong": "#c8c8cc",
+    "--accent": "#2f5f9e",
+    "--accent-contrast": "#ffffff",
+    "--hover-tint": "rgba(0,0,0,0.03)",
+    "--radius-sm": "8px",
+    "--radius-md": "12px",
+    "--radius-pill": "999px",
+    "--shadow": "none"
   };
   const night = {
-    "--bg": "#0d0d0d",
-    "--surface": "#141414",
-    "--surface-soft": "#1a1a1a",
-    "--ink": "#f5f5f5",
+    "--bg": "#0e0e0f",
+    "--surface": "#161617",
+    "--surface-soft": "#1c1c1e",
+    "--ink": "#f2f2f2",
     "--ink-soft": "#d6d6d6",
     "--muted": "#9a9a9a",
     "--muted-soft": "#7a7a7a",
-    "--line": "#2a2a2a",
-    "--line-strong": "#3a3a3a",
-    "--accent": "#f5f5f5",
+    "--line": "#2a2a2c",
+    "--line-strong": "#3a3a3e",
+    "--accent": "#b54a4a",
+    "--accent-contrast": "#ffffff",
     "--hover-tint": "rgba(255,255,255,0.04)"
   };
   const root = customProps(ruleBody(css, ":root,"));
@@ -132,8 +138,10 @@ test("day and night tokens move together", () => {
     assert.equal(nightRule[key], value, key);
     assert.equal(systemNight[key], value, `system ${key}`);
   }
-  assert.match(css, /--radius-sm:\s*4px/);
-  assert.match(css, /--radius-md:\s*6px/);
+  assert.doesNotMatch(css, /--accent:\s*#(?:0a0a0a|f5f5f5)/i);
+  assert.match(css, /--radius-sm:\s*8px/);
+  assert.match(css, /--radius-md:\s*12px/);
+  assert.match(css, /--radius-pill:\s*999px/);
   assert.match(css, /--shadow:\s*none/);
   assert.match(css, /--measure:\s*36rem/);
   assert.match(css, /--measure-index:\s*40rem/);
@@ -170,28 +178,33 @@ test("theme and language share one segmented control", () => {
   assert.match(base, /class="is-home"/);
   const button = ruleBody(css, ".seg button");
   assert.match(button, /height:\s*24px/);
-  assert.match(button, /padding:\s*0 6px/);
-  assert.match(button, /border:\s*0/);
+  assert.match(button, /padding:\s*0 var\(--s-2\)/);
+  assert.match(button, /border:\s*1px solid var\(--line-strong\)/);
   assert.match(button, /background:\s*transparent/);
-  assert.match(button, /border-radius:\s*0/);
+  assert.match(button, /color:\s*var\(--ink\)/);
+  assert.match(button, /border-radius:\s*var\(--radius-pill\)/);
+  assert.doesNotMatch(button, /border-radius:\s*0/);
   assert.match(button, /box-shadow:\s*none/);
   assert.match(button, /appearance:\s*none/);
   const hit = ruleBody(css, ".seg button::before");
   assert.match(hit, /height:\s*44px/);
   const on = ruleBody(css, '.seg button[aria-pressed="true"]');
-  assert.match(on, /color:\s*var\(--ink\)/);
+  assert.match(on, /background:\s*var\(--accent\)/);
+  assert.match(on, /color:\s*var\(--accent-contrast\)/);
+  assert.match(on, /border-color:\s*var\(--accent\)/);
   assert.match(on, /font-weight:\s*600/);
-  assert.match(on, /border-bottom-color:\s*var\(--ink\)/);
+  assert.doesNotMatch(on, /var\(--ink\)/);
+  assert.doesNotMatch(on, /text-decoration:\s*underline/);
   assert.match(ruleBody(css, ".top"), /height:\s*var\(--s-7\)/);
   assert.match(ruleBody(css, ".top"), /border-bottom:\s*1px solid var\(--line\)/);
   assert.doesNotMatch(ruleBody(css, ".top"), /overflow:\s*hidden/);
   assert.match(ruleBody(css, ".brand::before,"), /height:\s*44px/);
-  assert.match(css, /max-width:\s*380px[\s\S]*?\.top\s*\{[^}]*height:\s*auto/);
-  assert.match(css, /max-width:\s*380px[\s\S]*?\.top\s*\{[^}]*min-height:\s*var\(--s-7\)/);
-  assert.match(css, /max-width:\s*380px[\s\S]*?\.top\s*\{[^}]*overflow:\s*visible/);
-  assert.match(css, /max-width:\s*380px[\s\S]*?\.top-inner\s*\{[^}]*flex-wrap:\s*wrap/);
-  assert.match(css, /max-width:\s*380px[\s\S]*?\.top-inner\s*\{[^}]*row-gap:\s*var\(--s-2\)/);
-  assert.match(css, /max-width:\s*380px[\s\S]*?\.brand-lockup,\s*\.top \.theme-switch\s*\{[^}]*flex-shrink:\s*0/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?\.top\s*\{[^}]*height:\s*auto/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?\.top\s*\{[^}]*min-height:\s*var\(--s-7\)/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?\.top\s*\{[^}]*overflow:\s*visible/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?\.top-inner\s*\{[^}]*flex-wrap:\s*wrap/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?\.top-inner\s*\{[^}]*row-gap:\s*var\(--s-2\)/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?\.brand-lockup,\s*\.top \.theme-switch\s*\{[^}]*flex-shrink:\s*0/);
 });
 
 test("index, summary, and original use the reading rhythm", () => {
@@ -225,35 +238,44 @@ test("index, summary, and original use the reading rhythm", () => {
   assert.match(ruleBody(css, ".original"), /border-top:\s*1px solid var\(--line\)/);
   assert.match(ruleBody(css, ".original-body p"), /margin:\s*var\(--s-4\) 0/);
   assert.match(ruleBody(css, ".original-body a"), /text-decoration:\s*underline/);
+  assert.match(ruleBody(css, "a"), /color:\s*var\(--ink\)/);
+  assert.match(ruleBody(css, "a"), /text-decoration:\s*underline/);
+  assert.doesNotMatch(ruleBody(css, "a"), /var\(--accent\)/);
+  assert.doesNotMatch(ruleBody(css, ".original-body a"), /var\(--accent\)/);
+  assert.match(css, /\.notice \{\s*padding-bottom:\s*var\(--s-7\);\s*background:\s*var\(--surface-soft\);/);
+  assert.match(ruleBody(css, ".summary"), /background:\s*var\(--surface-soft\)/);
+  assert.doesNotMatch(ruleBody(css, ".summary"), /var\(--accent\)/);
 });
 
-test("back to top is a hairline square on the shared layout", () => {
-  assert.match(base, /<button type="button" class="back-to-top" aria-label="Back to top" hidden/);
-  assert.match(base, /viewBox="0 0 16 16"/);
-  assert.match(base, /stroke="currentColor"/);
-  assert.match(base, /stroke-width="1\.5"/);
+test("back to top is one bottom-right accent pill", () => {
+  assert.equal((base.match(/class="back-to-top"/g) || []).length, 1);
+  assert.match(base, /<button type="button" class="back-to-top" aria-label="回顶" hidden[^>]*>回顶<\/button>/);
+  assert.doesNotMatch(base, /Back to top|回到顶部|class="back-page"/);
   assert.match(base, /scrollY >= window\.innerHeight/);
   assert.match(base, /scrollTo\(\{ top: 0, behavior: prefersReducedMotion\(\) \? "auto" : "smooth" \}\)/);
   assert.match(base, /prefers-reduced-motion: reduce/);
   assert.doesNotMatch(base, /<a href="#"[^>]*class="back-to-top"/);
+  assert.match(base, /localStorage\.getItem\("ygh-theme"\)/);
+  assert.match(base, /localStorage\.getItem\("xgr-theme"\)/);
+  assert.match(base, /localStorage\.setItem\("ygh-theme", mode\)/);
 
   const button = ruleBody(css, ".back-to-top");
   assert.match(button, /position:\s*fixed/);
   assert.match(button, /z-index:\s*20\b/);
-  assert.match(button, /width:\s*var\(--s-6\)/);
-  assert.match(button, /height:\s*var\(--s-6\)/);
-  assert.match(button, /border-radius:\s*var\(--radius-sm\)/);
-  assert.match(button, /border:\s*1px solid var\(--line\)/);
-  assert.match(button, /background:\s*var\(--surface\)/);
-  assert.match(button, /box-shadow:\s*none/);
-  assert.match(button, /color:\s*var\(--muted\)/);
+  assert.match(button, /min-width:\s*44px/);
+  assert.match(button, /height:\s*44px/);
+  assert.match(button, /border-radius:\s*var\(--radius-pill\)/);
+  assert.match(button, /border:\s*1px solid var\(--accent\)/);
+  assert.match(button, /background:\s*var\(--accent\)/);
+  assert.match(button, /box-shadow:\s*var\(--shadow\)/);
+  assert.match(button, /color:\s*var\(--accent-contrast\)/);
   assert.match(button, /right:\s*calc\(var\(--s-4\) \+ env\(safe-area-inset-right, 0px\)\)/);
   assert.match(button, /bottom:\s*calc\(var\(--s-4\) \+ env\(safe-area-inset-bottom, 0px\)\)/);
   assert.match(button, /opacity:\s*0/);
   assert.match(button, /visibility:\s*hidden/);
   assert.match(button, /pointer-events:\s*none/);
   assert.match(ruleBody(css, ".back-to-top[hidden]"), /display:\s*none/);
-  assert.doesNotMatch(button, /backdrop-filter|blur\(|linear-gradient|radial-gradient|999px|border-radius:\s*50%/);
+  assert.doesNotMatch(button, /backdrop-filter|blur\(|linear-gradient|radial-gradient|border-radius:\s*50%/);
   assert.doesNotMatch(button, /transition:/);
 
   const visible = ruleBody(css, ".back-to-top.is-visible");
@@ -266,14 +288,15 @@ test("back to top is a hairline square on the shared layout", () => {
   assert.match(hit, /height:\s*44px/);
 
   const hover = ruleBody(css, ".back-to-top:hover");
-  assert.match(hover, /color:\s*var\(--ink\)/);
-  assert.match(hover, /border-color:\s*var\(--line-strong\)/);
-  assert.match(ruleBody(css, ".back-to-top:focus-visible"), /color:\s*var\(--ink\)/);
-  assert.match(ruleBody(css, ".back-to-top:active"), /color:\s*var\(--ink\)/);
+  assert.match(hover, /color:\s*var\(--accent-contrast\)/);
+  assert.match(hover, /background:\s*var\(--accent\)/);
+  assert.match(hover, /border-color:\s*var\(--accent\)/);
+  assert.match(ruleBody(css, ".back-to-top:focus-visible"), /color:\s*var\(--accent-contrast\)/);
+  assert.match(ruleBody(css, ".back-to-top:active"), /color:\s*var\(--accent-contrast\)/);
   assert.doesNotMatch(css, /\.back-to-top:active\s*\{[^}]*transform:/);
 
-  assert.match(css, /max-width:\s*380px[\s\S]*?\.back-to-top\s*\{[^}]*right:\s*calc\(var\(--s-3\) \+ env\(safe-area-inset-right, 0px\)\)/);
-  assert.match(css, /max-width:\s*380px[\s\S]*?\.back-to-top\s*\{[^}]*bottom:\s*calc\(var\(--s-3\) \+ env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?\.back-to-top\s*\{[^}]*right:\s*calc\(var\(--s-3\) \+ env\(safe-area-inset-right, 0px\)\)/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?\.back-to-top\s*\{[^}]*bottom:\s*calc\(var\(--s-3\) \+ env\(safe-area-inset-bottom, 0px\)\)/);
   assert.match(
     css,
     /@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*\.back-to-top \{[^}]*transition:\s*opacity 180ms ease, visibility 0s linear 180ms/
@@ -282,5 +305,5 @@ test("back to top is a hairline square on the shared layout", () => {
     css,
     /\.back-to-top\.is-visible \{[^}]*transition:\s*opacity 180ms ease, visibility 0s linear 0s/
   );
-  assert.doesNotMatch(ruleBody(css, ".back-to-top svg"), /animation:/);
+  assert.doesNotMatch(css, /\.back-to-top svg/);
 });

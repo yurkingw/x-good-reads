@@ -52,19 +52,21 @@
   --t6-lh: 1.3;
   --t6-track: 0.02em;
   --t6-track-label: 0.04em;
-  --bg: #ffffff;
-  --surface: #fafafa;
-  --surface-soft: #f7f7f7;
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --surface-soft: #f0f0f1;
   --ink: #0a0a0a;
   --ink-soft: #2e2e2e;
   --muted: #6b6b6b;
   --muted-soft: #8a8a8a;
-  --line: #ebebeb;
-  --line-strong: #dcdcdc;
-  --accent: #0a0a0a;
+  --line: #e6e6e8;
+  --line-strong: #c8c8cc;
+  --accent: #2f5f9e;
+  --accent-contrast: #ffffff;
   --hover-tint: rgba(0,0,0,0.03);
-  --radius-sm: 4px;
-  --radius-md: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
   --shadow: none;
   --measure: 36rem;
   --measure-index: 40rem;
@@ -75,32 +77,34 @@
 
 [data-theme="night"] {
   color-scheme: dark;
-  --bg: #0d0d0d;
-  --surface: #141414;
-  --surface-soft: #1a1a1a;
-  --ink: #f5f5f5;
+  --bg: #0e0e0f;
+  --surface: #161617;
+  --surface-soft: #1c1c1e;
+  --ink: #f2f2f2;
   --ink-soft: #d6d6d6;
   --muted: #9a9a9a;
   --muted-soft: #7a7a7a;
-  --line: #2a2a2a;
-  --line-strong: #3a3a3a;
-  --accent: #f5f5f5;
+  --line: #2a2a2c;
+  --line-strong: #3a3a3e;
+  --accent: #b54a4a;
+  --accent-contrast: #ffffff;
   --hover-tint: rgba(255,255,255,0.04);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="day"]):not([data-theme="night"]) {
     color-scheme: dark;
-    --bg: #0d0d0d;
-    --surface: #141414;
-    --surface-soft: #1a1a1a;
-    --ink: #f5f5f5;
+    --bg: #0e0e0f;
+    --surface: #161617;
+    --surface-soft: #1c1c1e;
+    --ink: #f2f2f2;
     --ink-soft: #d6d6d6;
     --muted: #9a9a9a;
     --muted-soft: #7a7a7a;
-    --line: #2a2a2a;
-    --line-strong: #3a3a3a;
-    --accent: #f5f5f5;
+    --line: #2a2a2c;
+    --line-strong: #3a3a3e;
+    --accent: #b54a4a;
+    --accent-contrast: #ffffff;
     --hover-tint: rgba(255,255,255,0.04);
   }
 }
@@ -133,6 +137,7 @@ body {
 
 a {
   color: var(--ink);
+  text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
@@ -287,13 +292,12 @@ main { padding-block: var(--s-6); }
   justify-content: center;
   height: 24px;
   margin: 0;
-  padding: 0 6px;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  border-radius: 0;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
   background: transparent;
   box-shadow: none;
-  color: var(--muted);
+  color: var(--ink);
   cursor: pointer;
   font: inherit;
   font-weight: 500;
@@ -311,9 +315,10 @@ main { padding-block: var(--s-6); }
 }
 
 .seg button[aria-pressed="true"] {
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
   font-weight: 600;
-  border-bottom-color: var(--ink);
 }
 
 .seg button:disabled {
@@ -594,7 +599,10 @@ main { padding-block: var(--s-6); }
   border: 1px solid var(--line);
 }
 
-.notice { padding-bottom: var(--s-7); }
+.notice {
+  padding-bottom: var(--s-7);
+  background: var(--surface-soft);
+}
 
 .notice p {
   margin: 0;
@@ -616,15 +624,18 @@ main { padding-block: var(--s-6); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--s-6);
-  height: var(--s-6);
+  min-width: 44px;
+  height: 44px;
   margin: 0;
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  box-shadow: none;
-  color: var(--muted);
+  padding: 0 var(--s-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  box-shadow: var(--shadow);
+  color: var(--accent-contrast);
+  font: inherit;
+  font-size: var(--t6-size);
+  font-weight: var(--t6-weight);
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
@@ -651,20 +662,15 @@ main { padding-block: var(--s-6); }
   transform: translate(-50%, -50%);
 }
 
-.back-to-top svg {
-  display: block;
-  width: 16px;
-  height: 16px;
-}
-
 .back-to-top:hover,
 .back-to-top:focus-visible,
 .back-to-top:active {
-  color: var(--ink);
-  border-color: var(--line-strong);
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
-@media (max-width: 380px) {
+@media (max-width: 390px) {
   :root { --pad-x: var(--s-3); }
 
   .top {
@@ -697,9 +703,12 @@ main { padding-block: var(--s-6); }
     transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
   }
 
-  a,
-  .seg button {
+  a {
     transition: color 150ms ease, border-color 150ms ease;
+  }
+
+  .seg button {
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
   }
 
   .back-to-top {
