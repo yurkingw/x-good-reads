@@ -214,9 +214,12 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(css, /--shadow:\s*none/);
   assert.match(css, /--measure:\s*36rem/);
   assert.match(css, /--measure-index:\s*40rem/);
-  assert.match(css, /--t3-lh:\s*1\.7/);
+  assert.match(css, /--t3-lh:\s*1\.65/);
   assert.match(css, /--t4-lh:\s*1\.55/);
-  assert.match(css, /--t1-track:\s*-0\.025em/);
+  assert.match(css, /--t1-track:\s*-0\.03em/);
+  assert.match(css, /--pad-x:\s*var\(--s-5\)/);
+  assert.match(css, /--inset-row:\s*var\(--s-4\)/);
+  assert.doesNotMatch(css, /--pad-x:\s*var\(--s-3\)/);
   assert.match(css, /--font-ui:\s*"Inter", system-ui, -apple-system, "Segoe UI", "Helvetica Neue",\s*"PingFang SC", "Noto Sans SC", Arial, sans-serif/);
   assert.match(css, /font-family:\s*"Inter"/);
   assert.doesNotMatch(css, /#f4f1ea|#fbfaf7|#0c5c3a|#e8f2ec|#1a1714/);
@@ -351,18 +354,20 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
       },
       metaTop: parseFloat(cs(".meta").marginTop),
       summaryPad: parseFloat(cs(".summary").paddingTop),
-      originalGap: parseFloat(cs(".original").marginTop)
+      originalGap: parseFloat(cs(".original").marginTop),
+      width: document.documentElement.clientWidth,
+      noticePad: parseFloat(cs(".notice").paddingLeft)
     };
   });
 
   const narrow = await read();
   assert.equal(narrow.root, 16);
-  assert.equal(narrow.summary, 15);
-  assert.equal(narrow.original, 17);
-  assert.ok(narrow.original - narrow.summary >= 2);
+  assert.equal(narrow.summary, 14);
+  assert.equal(narrow.original, 15);
+  assert.ok(narrow.original - narrow.summary >= 1);
   assert.notEqual(narrow.summaryWeight, narrow.originalWeight);
   assert.notEqual(narrow.summaryLh, narrow.originalLh);
-  assert.equal(narrow.h1, 28);
+  assert.equal(narrow.h1, 26);
   assert.ok(narrow.h1 - narrow.original >= 10);
   assert.ok(Math.abs(narrow.top - 48) <= 1, `top ${narrow.top}`);
   assertThemeFit(await readThemeFit(page));
@@ -416,7 +421,7 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.equal(narrow.segRadius, "999px");
   assert.equal(narrow.segWeight, "600");
   assert.equal(narrow.segBorder, "1px");
-  assert.equal(narrow.segFont, "12px");
+  assert.equal(narrow.segFont, "11px");
   assert.equal(narrow.hit, "44px");
   assert.equal(narrow.metaTop, 12);
   assert.equal(narrow.summaryPad, 24);
@@ -426,15 +431,20 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
     assert.ok(Math.abs(edge.summary - edge.h1) <= 1, JSON.stringify(edge));
     assert.ok(Math.abs(edge.original - edge.h1) <= 1, JSON.stringify(edge));
   }
+  assert.ok(narrow.left.h1 >= 16 - 0.5, `h1 left ${narrow.left.h1}`);
+  assert.ok(narrow.width - narrow.right.h1 >= 16 - 0.5, `h1 right ${narrow.width - narrow.right.h1}`);
+  assert.ok(narrow.left.summary >= 16 - 0.5, `summary left ${narrow.left.summary}`);
+  assert.ok(narrow.width - narrow.right.summary >= 16 - 0.5, `summary right ${narrow.width - narrow.right.summary}`);
+  assert.ok(narrow.noticePad >= 16, `notice pad ${narrow.noticePad}`);
 
   await page.setViewportSize({ width: 390, height: 812 });
   assertThemeFit(await readThemeFit(page));
   await page.setViewportSize({ width: 1280, height: 900 });
   const wide = await read();
   assert.equal(wide.root, 16);
-  assert.equal(wide.summary, 15);
-  assert.equal(wide.original, 18);
-  assert.equal(wide.h1, 32);
+  assert.equal(wide.summary, 14);
+  assert.equal(wide.original, 16);
+  assert.equal(wide.h1, 30);
   assert.ok(wide.h1 - wide.original >= 10);
   assert.ok(Math.abs(wide.top - 48) <= 1, `wide top ${wide.top}`);
   const wideRow = await page.evaluate(() => {
@@ -468,18 +478,20 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
       titleColor: title.color,
       list: getComputedStyle(document.querySelector(".index")).listStyleType,
       pad: parseFloat(getComputedStyle(document.querySelector(".index a")).paddingTop),
+      padInline: parseFloat(getComputedStyle(document.querySelector(".index a")).paddingLeft),
       edges: { top: left(".top-inner"), h1: left("h1"), title: left(".index-title") }
     };
   });
-  assert.equal(home.h1, 24);
+  assert.equal(home.h1, 22);
   assert.equal(home.title, 14);
-  assert.equal(home.titleWeight, "500");
-  assert.equal(home.byline, 12);
+  assert.equal(home.titleWeight, "600");
+  assert.equal(home.byline, 11);
   assert.notEqual(home.bylineColor, home.titleColor);
   assert.equal(home.list, "none");
   assert.equal(home.pad, 16);
+  assert.equal(home.padInline, 16);
   assert.ok(Math.abs(home.edges.top - home.edges.h1) <= 1, JSON.stringify(home.edges));
-  assert.ok(Math.abs(home.edges.title - home.edges.h1) <= 1, JSON.stringify(home.edges));
+  assert.ok(Math.abs(home.edges.title - home.edges.h1 - 16) <= 1, JSON.stringify(home.edges));
   const indexLink = page.locator(".index a").first();
   await indexLink.hover();
   const hover = await indexLink.evaluate((node) => getComputedStyle(node).backgroundColor);
@@ -568,7 +580,8 @@ async function assertToggleInChrome(sampleId) {
         originalWeight: original.fontWeight
       };
     });
-    assert.ok(zhType.original - zhType.summary >= 2);
+    assert.ok(zhType.original - zhType.summary >= 1);
+    assert.equal(zhType.summary, 14);
     assert.notEqual(zhType.summaryWeight, zhType.originalWeight);
     await page.locator('button[data-lang="en"]').click();
     assert.equal(await page.locator('button[data-lang="en"]').getAttribute("aria-pressed"), "true");

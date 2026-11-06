@@ -27,29 +27,29 @@
   --s-6: 32px;
   --s-7: 48px;
   --s-8: 64px;
-  --t1-size: 28px;
-  --t1-weight: 600;
+  --t1-size: 26px;
+  --t1-weight: 650;
   --t1-lh: 1.2;
-  --t1-track: -0.025em;
-  --t2-size: 24px;
-  --t2-weight: 560;
-  --t2-lh: 1.25;
+  --t1-track: -0.03em;
+  --t2-size: 20px;
+  --t2-weight: 600;
+  --t2-lh: 1.3;
   --t2-track: -0.02em;
-  --t3-size: 17px;
+  --t3-size: 15px;
   --t3-weight: 400;
-  --t3-lh: 1.7;
+  --t3-lh: 1.65;
   --t3-track: 0;
-  --t4-size: 15px;
+  --t4-size: 14px;
   --t4-weight: 450;
   --t4-lh: 1.55;
   --t4-track: 0;
-  --t5-size: 14px;
-  --t5-weight: 500;
+  --t5-size: 13px;
+  --t5-weight: 560;
   --t5-lh: 1.4;
   --t5-track: 0;
-  --t6-size: 12px;
+  --t6-size: 11px;
   --t6-weight: 500;
-  --t6-lh: 1.3;
+  --t6-lh: 1.35;
   --t6-track: 0.02em;
   --t6-track-label: 0.04em;
   --bg: #f7f7f8;
@@ -70,7 +70,8 @@
   --shadow: none;
   --measure: 36rem;
   --measure-index: 40rem;
-  --pad-x: var(--s-4);
+  --pad-x: var(--s-5);
+  --inset-row: var(--s-4);
   --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", "Helvetica Neue",
     "PingFang SC", "Noto Sans SC", Arial, sans-serif;
 }
@@ -111,8 +112,10 @@
 
 @media (min-width: 640px) {
   :root {
-    --t1-size: 32px;
-    --t3-size: 18px;
+    --t1-size: 30px;
+    --t1-weight: 600;
+    --t2-size: 22px;
+    --t3-size: 16px;
   }
 }
 
@@ -351,6 +354,7 @@ main { padding-block: var(--s-6); }
 .index a {
   display: block;
   padding-block: var(--s-4);
+  padding-inline: var(--inset-row);
   color: inherit;
   text-decoration: none;
 }
@@ -364,10 +368,10 @@ main { padding-block: var(--s-6); }
 .index-title {
   display: block;
   color: var(--ink);
-  font-size: var(--t5-size);
-  font-weight: 500;
-  line-height: var(--t5-lh);
-  letter-spacing: var(--t5-track);
+  font-size: var(--t4-size);
+  font-weight: 600;
+  line-height: var(--t4-lh);
+  letter-spacing: var(--t4-track);
   overflow-wrap: break-word;
 }
 
@@ -506,13 +510,14 @@ main { padding-block: var(--s-6); }
   letter-spacing: var(--t4-track);
 }
 
+.summary-body:lang(zh),
 .summary-body.is-zh { line-height: 1.7; }
 
 .summary-body h3 {
   margin: var(--s-4) 0 var(--s-2);
   color: var(--ink-soft);
   font-size: var(--t4-size);
-  font-weight: 500;
+  font-weight: 600;
   line-height: var(--t4-lh);
   letter-spacing: 0;
 }
@@ -601,6 +606,7 @@ main { padding-block: var(--s-6); }
 
 .notice {
   padding-bottom: var(--s-7);
+  padding-inline: max(var(--pad-x), var(--inset-row));
   background: var(--surface-soft);
 }
 
@@ -671,7 +677,7 @@ main { padding-block: var(--s-6); }
 }
 
 @media (max-width: 390px) {
-  :root { --pad-x: var(--s-3); }
+  :root { --pad-x: var(--s-4); }
 
   .top {
     height: auto;

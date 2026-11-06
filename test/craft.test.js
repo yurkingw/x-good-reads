@@ -38,8 +38,10 @@ test("spacing uses only the eight-step scale", () => {
   ]) {
     assert.match(css, new RegExp(`${token}:\\s*${value}`));
   }
-  assert.match(css, /--pad-x:\s*var\(--s-4\)/);
-  assert.match(css, /max-width:\s*390px[\s\S]*?--pad-x:\s*var\(--s-3\)/);
+  assert.match(css, /--pad-x:\s*var\(--s-5\)/);
+  assert.match(css, /--inset-row:\s*var\(--s-4\)/);
+  assert.match(css, /max-width:\s*390px[\s\S]*?--pad-x:\s*var\(--s-4\)/);
+  assert.doesNotMatch(css, /--pad-x:\s*var\(--s-3\)/);
 
   const rem = [...css.matchAll(/(\d*\.\d+|\d+)rem/g)].map((match) => match[1]);
   assert.deepEqual(rem, ["36", "40"]);
@@ -55,28 +57,31 @@ test("spacing uses only the eight-step scale", () => {
 });
 
 test("type scale is six roles with a real summary/original split", () => {
-  assert.match(css, /--t1-size:\s*28px/);
-  assert.match(css, /--t2-size:\s*24px/);
-  assert.match(css, /--t3-size:\s*17px/);
-  assert.match(css, /--t4-size:\s*15px/);
-  assert.match(css, /--t5-size:\s*14px/);
-  assert.match(css, /--t6-size:\s*12px/);
-  assert.match(css, /--t1-weight:\s*600/);
-  assert.match(css, /--t2-weight:\s*560/);
+  assert.match(css, /--t1-size:\s*26px/);
+  assert.match(css, /--t2-size:\s*20px/);
+  assert.match(css, /--t3-size:\s*15px/);
+  assert.match(css, /--t4-size:\s*14px/);
+  assert.match(css, /--t5-size:\s*13px/);
+  assert.match(css, /--t6-size:\s*11px/);
+  assert.match(css, /--t1-weight:\s*650/);
+  assert.match(css, /--t2-weight:\s*600/);
   assert.match(css, /--t3-weight:\s*400/);
   assert.match(css, /--t4-weight:\s*450/);
-  assert.match(css, /--t5-weight:\s*500/);
+  assert.match(css, /--t5-weight:\s*560/);
   assert.match(css, /--t6-weight:\s*500/);
   assert.match(css, /--t1-lh:\s*1\.2\b/);
-  assert.match(css, /--t2-lh:\s*1\.25\b/);
-  assert.match(css, /--t3-lh:\s*1\.7\b/);
+  assert.match(css, /--t2-lh:\s*1\.3\b/);
+  assert.match(css, /--t3-lh:\s*1\.65\b/);
   assert.match(css, /--t4-lh:\s*1\.55\b/);
-  assert.match(css, /--t1-track:\s*-0\.025em/);
+  assert.match(css, /--t6-lh:\s*1\.35\b/);
+  assert.match(css, /--t1-track:\s*-0\.03em/);
   assert.match(css, /--t2-track:\s*-0\.02em/);
   assert.match(css, /--t6-track:\s*0\.02em/);
   assert.match(css, /--t6-track-label:\s*0\.04em/);
-  assert.match(css, /min-width:\s*640px[\s\S]*?--t1-size:\s*32px/);
-  assert.match(css, /min-width:\s*640px[\s\S]*?--t3-size:\s*18px/);
+  assert.match(css, /min-width:\s*640px[\s\S]*?--t1-size:\s*30px/);
+  assert.match(css, /min-width:\s*640px[\s\S]*?--t1-weight:\s*600/);
+  assert.match(css, /min-width:\s*640px[\s\S]*?--t2-size:\s*22px/);
+  assert.match(css, /min-width:\s*640px[\s\S]*?--t3-size:\s*16px/);
   assert.match(css, /html\s*\{[^}]*font-size:\s*16px/);
   assert.doesNotMatch(css, /font-size:\s*17px/);
   assert.match(css, /font-optical-sizing:\s*auto/);
@@ -90,8 +95,10 @@ test("type scale is six roles with a real summary/original split", () => {
   assert.match(ruleBody(css, ".summary-body"), /font-weight:\s*var\(--t4-weight\)/);
   assert.match(ruleBody(css, ".summary-body"), /line-height:\s*var\(--t4-lh\)/);
   assert.match(ruleBody(css, ".summary-body.is-zh"), /line-height:\s*1\.7/);
-  assert.match(ruleBody(css, ".index-title"), /font-size:\s*var\(--t5-size\)/);
-  assert.match(ruleBody(css, ".index-title"), /font-weight:\s*500/);
+  assert.doesNotMatch(ruleBody(css, ".summary-body.is-zh"), /font-size/);
+  assert.match(ruleBody(css, ".index-title"), /font-size:\s*var\(--t4-size\)/);
+  assert.match(ruleBody(css, ".index-title"), /font-weight:\s*600/);
+  assert.match(ruleBody(css, ".summary-body h3"), /font-weight:\s*600/);
   assert.match(ruleBody(css, ".seg"), /font-size:\s*var\(--t6-size\)/);
   assert.match(ruleBody(css, "h2"), /font-size:\s*var\(--t6-size\)/);
   assert.match(ruleBody(css, "h2"), /letter-spacing:\s*var\(--t6-track-label\)/);
@@ -212,6 +219,7 @@ test("index, summary, and original use the reading rhythm", () => {
   assert.match(ruleBody(css, ".index"), /list-style:\s*none/);
   assert.match(ruleBody(css, ".index"), /border-top:\s*1px solid var\(--line\)/);
   assert.match(ruleBody(css, ".index a"), /padding-block:\s*var\(--s-4\)/);
+  assert.match(ruleBody(css, ".index a"), /padding-inline:\s*var\(--inset-row\)/);
   assert.match(ruleBody(css, ".index a:hover,"), /background:\s*var\(--hover-tint\)/);
   assert.match(ruleBody(css, ".byline"), /margin-top:\s*var\(--s-1\)/);
   assert.match(ruleBody(css, ".byline"), /color:\s*var\(--muted\)/);
@@ -242,7 +250,7 @@ test("index, summary, and original use the reading rhythm", () => {
   assert.match(ruleBody(css, "a"), /text-decoration:\s*underline/);
   assert.doesNotMatch(ruleBody(css, "a"), /var\(--accent\)/);
   assert.doesNotMatch(ruleBody(css, ".original-body a"), /var\(--accent\)/);
-  assert.match(css, /\.notice \{\s*padding-bottom:\s*var\(--s-7\);\s*background:\s*var\(--surface-soft\);/);
+  assert.match(css, /\.notice \{\s*padding-bottom:\s*var\(--s-7\);\s*padding-inline:\s*max\(var\(--pad-x\), var\(--inset-row\)\);\s*background:\s*var\(--surface-soft\);/);
   assert.match(ruleBody(css, ".summary"), /background:\s*var\(--surface-soft\)/);
   assert.doesNotMatch(ruleBody(css, ".summary"), /var\(--accent\)/);
 });
