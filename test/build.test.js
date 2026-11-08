@@ -184,34 +184,43 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(postTemplate, /Post image/);
 
   const css = fs.readFileSync(path.join(root, "src", "css", "site.css"), "utf8");
-  assert.match(css, /--bg:\s*#f7f7f8/);
+  assert.match(css, /--bg:\s*#ebe9e6/);
   assert.match(css, /--surface:\s*#ffffff/);
+  assert.match(css, /--surface-raised:\s*#ffffff/);
   assert.match(css, /--surface-soft:\s*#f0f0f1/);
   assert.match(css, /--ink:\s*#0a0a0a/);
   assert.match(css, /--ink-soft:\s*#2e2e2e/);
   assert.match(css, /--muted:\s*#6b6b6b/);
-  assert.match(css, /--line:\s*#e6e6e8/);
-  assert.match(css, /--line-strong:\s*#c8c8cc/);
+  assert.match(css, /--line:\s*#e2e0dc/);
+  assert.match(css, /--line-strong:\s*#c4c2be/);
   assert.match(css, /--accent:\s*#2f5f9e/);
   assert.match(css, /--accent-contrast:\s*#ffffff/);
+  assert.match(css, /--cta:\s*#0a0a0a/);
+  assert.match(css, /--cta-contrast:\s*#ffffff/);
   assert.doesNotMatch(css, /--accent:\s*#(?:0a0a0a|f5f5f5)/i);
   assert.match(css, /--hover-tint:\s*rgba\(0,0,0,0\.03\)/);
-  assert.match(css, /--bg:\s*#0e0e0f/);
-  assert.match(css, /--surface:\s*#161617/);
+  assert.match(css, /--bg:\s*#0a0b0c/);
+  assert.match(css, /--surface:\s*#141516/);
+  assert.match(css, /--surface-raised:\s*#1a1b1d/);
   assert.match(css, /--surface-soft:\s*#1c1c1e/);
   assert.match(css, /--ink:\s*#f2f2f2/);
   assert.match(css, /--muted:\s*#9a9a9a/);
-  assert.match(css, /--line:\s*#2a2a2c/);
-  assert.match(css, /--line-strong:\s*#3a3a3e/);
+  assert.match(css, /--line:\s*#2a2c2e/);
+  assert.match(css, /--line-strong:\s*#3a3c40/);
   assert.match(css, /--hover-tint:\s*rgba\(255,255,255,0\.04\)/);
+  assert.match(css, /--cta:\s*#f2f2f2/);
+  assert.match(css, /--cta-contrast:\s*#0a0a0a/);
   assert.match(css, /--accent:\s*#b54a4a/);
   assert.match(css, /\[data-theme="night"\]/);
   assert.match(css, /prefers-color-scheme:\s*dark/);
   assert.match(css, /:root:not\(\[data-theme="day"\]\):not\(\[data-theme="night"\]\)/);
-  assert.match(css, /--radius-sm:\s*8px/);
-  assert.match(css, /--radius-md:\s*12px/);
+  assert.match(css, /--radius-sm:\s*10px/);
+  assert.match(css, /--radius-md:\s*16px/);
+  assert.match(css, /--radius-lg:\s*22px/);
   assert.match(css, /--radius-pill:\s*999px/);
-  assert.match(css, /--shadow:\s*none/);
+  assert.match(css, /--shadow-card:\s*0 1px 2px rgba\(0,0,0,\.04\), 0 12px 32px rgba\(0,0,0,\.08\)/);
+  assert.doesNotMatch(css, /--shadow-card:\s*none/);
+  assert.doesNotMatch(css, /--shadow:\s*none/);
   assert.match(css, /--measure:\s*36rem/);
   assert.match(css, /--measure-index:\s*40rem/);
   assert.match(css, /--t3-lh:\s*1\.65/);
@@ -428,7 +437,8 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.equal(narrow.originalGap, 32);
   for (const edge of [narrow.left, narrow.right]) {
     assert.ok(Math.abs(edge.top - edge.h1) <= 1, JSON.stringify(edge));
-    assert.ok(Math.abs(edge.summary - edge.h1) <= 1, JSON.stringify(edge));
+    const summaryInset = Math.abs(edge.summary - edge.h1);
+    assert.ok(summaryInset >= 15.5 && summaryInset <= 17.5, JSON.stringify(edge));
     assert.ok(Math.abs(edge.original - edge.h1) <= 1, JSON.stringify(edge));
   }
   assert.ok(narrow.left.h1 >= 16 - 0.5, `h1 left ${narrow.left.h1}`);
@@ -455,7 +465,8 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.ok(wideRow < 8, `theme left the brand row by ${wideRow}px`);
   for (const edge of [wide.left, wide.right]) {
     assert.ok(Math.abs(edge.top - edge.h1) <= 1, JSON.stringify(edge));
-    assert.ok(Math.abs(edge.summary - edge.h1) <= 1, JSON.stringify(edge));
+    const summaryInset = Math.abs(edge.summary - edge.h1);
+    assert.ok(summaryInset >= 15.5 && summaryInset <= 17.5, JSON.stringify(edge));
     assert.ok(Math.abs(edge.original - edge.h1) <= 1, JSON.stringify(edge));
   }
 
@@ -483,7 +494,7 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
     };
   });
   assert.equal(home.h1, 22);
-  assert.equal(home.title, 14);
+  assert.equal(home.title, 16);
   assert.equal(home.titleWeight, "600");
   assert.equal(home.byline, 11);
   assert.notEqual(home.bylineColor, home.titleColor);
@@ -494,6 +505,10 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.ok(Math.abs(home.edges.title - home.edges.h1 - 16) <= 1, JSON.stringify(home.edges));
   const indexLink = page.locator(".index a").first();
   await indexLink.hover();
+  await page.waitForFunction(() => {
+    const node = document.querySelector(".index a");
+    return getComputedStyle(node).backgroundColor === "rgba(0, 0, 0, 0.03)";
+  });
   const hover = await indexLink.evaluate((node) => getComputedStyle(node).backgroundColor);
   assert.equal(hover, "rgba(0, 0, 0, 0.03)");
 
@@ -598,7 +613,7 @@ async function assertToggleInChrome(sampleId) {
     assert.equal(await page.locator('[data-theme-set="system"]').getAttribute("aria-pressed"), "true");
     assert.equal(await page.locator('[data-theme-set="day"]').getAttribute("aria-pressed"), "false");
     assert.equal(await page.locator('[data-theme-set="night"]').getAttribute("aria-pressed"), "false");
-    await expectBackground(page, "rgb(14, 14, 15)");
+    await expectBackground(page, "rgb(10, 11, 12)");
 
     await page.locator('[data-theme-set="day"]').click();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "day");
@@ -617,19 +632,19 @@ async function assertToggleInChrome(sampleId) {
       color: "rgb(255, 255, 255)",
       radius: "999px"
     });
-    await expectBackground(page, "rgb(247, 247, 248)");
+    await expectBackground(page, "rgb(235, 233, 230)");
     assert.deepEqual(await themeTokens(page), {
-      "--bg": "#f7f7f8",
+      "--bg": "#ebe9e6",
       "--surface": "#ffffff",
       "--muted": "#6b6b6b",
-      "--line": "#e6e6e8",
+      "--line": "#e2e0dc",
       "--hover-tint": "rgba(0,0,0,0.03)",
       "--ink": "#0a0a0a"
     });
     await page.reload();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "day");
     assert.equal(await page.locator('[data-theme-set="day"]').getAttribute("aria-pressed"), "true");
-    await expectBackground(page, "rgb(247, 247, 248)");
+    await expectBackground(page, "rgb(235, 233, 230)");
 
     await page.locator('[data-theme-set="night"]').click();
     assert.equal(await page.locator("html").getAttribute("data-theme"), "night");
@@ -647,12 +662,12 @@ async function assertToggleInChrome(sampleId) {
       color: "rgb(255, 255, 255)",
       radius: "999px"
     });
-    await expectBackground(page, "rgb(14, 14, 15)");
+    await expectBackground(page, "rgb(10, 11, 12)");
     assert.deepEqual(await themeTokens(page), {
-      "--bg": "#0e0e0f",
-      "--surface": "#161617",
+      "--bg": "#0a0b0c",
+      "--surface": "#141516",
       "--muted": "#9a9a9a",
-      "--line": "#2a2a2c",
+      "--line": "#2a2c2e",
       "--hover-tint": "rgba(255,255,255,0.04)",
       "--ink": "#f2f2f2"
     });
@@ -665,7 +680,7 @@ async function assertToggleInChrome(sampleId) {
     assert.equal(await page.evaluate(() => localStorage.getItem("ygh-theme")), "system");
     assert.equal(await page.locator('[data-theme-set="system"]').getAttribute("aria-pressed"), "true");
     await page.emulateMedia({ colorScheme: "light" });
-    await expectBackground(page, "rgb(247, 247, 248)");
+    await expectBackground(page, "rgb(235, 233, 230)");
 
     await page.evaluate(() => {
       localStorage.removeItem("ygh-theme");

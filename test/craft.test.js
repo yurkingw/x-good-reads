@@ -96,7 +96,7 @@ test("type scale is six roles with a real summary/original split", () => {
   assert.match(ruleBody(css, ".summary-body"), /line-height:\s*var\(--t4-lh\)/);
   assert.match(ruleBody(css, ".summary-body.is-zh"), /line-height:\s*1\.7/);
   assert.doesNotMatch(ruleBody(css, ".summary-body.is-zh"), /font-size/);
-  assert.match(ruleBody(css, ".index-title"), /font-size:\s*var\(--t4-size\)/);
+  assert.match(ruleBody(css, ".index-title"), /font-size:\s*var\(--t3-size\)/);
   assert.match(ruleBody(css, ".index-title"), /font-weight:\s*600/);
   assert.match(ruleBody(css, ".summary-body h3"), /font-weight:\s*600/);
   assert.match(ruleBody(css, ".seg"), /font-size:\s*var\(--t6-size\)/);
@@ -106,36 +106,49 @@ test("type scale is six roles with a real summary/original split", () => {
 
 test("day and night tokens move together", () => {
   const day = {
-    "--bg": "#f7f7f8",
+    "--bg": "#ebe9e6",
     "--surface": "#ffffff",
+    "--surface-raised": "#ffffff",
     "--surface-soft": "#f0f0f1",
     "--ink": "#0a0a0a",
     "--ink-soft": "#2e2e2e",
     "--muted": "#6b6b6b",
     "--muted-soft": "#8a8a8a",
-    "--line": "#e6e6e8",
-    "--line-strong": "#c8c8cc",
+    "--line": "#e2e0dc",
+    "--line-strong": "#c4c2be",
     "--accent": "#2f5f9e",
     "--accent-contrast": "#ffffff",
+    "--cta": "#0a0a0a",
+    "--cta-contrast": "#ffffff",
+    "--ok": "#1f7a4c",
     "--hover-tint": "rgba(0,0,0,0.03)",
-    "--radius-sm": "8px",
-    "--radius-md": "12px",
+    "--radius-sm": "10px",
+    "--radius-md": "16px",
+    "--radius-lg": "22px",
     "--radius-pill": "999px",
-    "--shadow": "none"
+    "--shadow-card": "0 1px 2px rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.08)",
+    "--shadow-soft": "0 4px 16px rgba(0,0,0,.06)",
+    "--inset-card": "var(--s-5)"
   };
   const night = {
-    "--bg": "#0e0e0f",
-    "--surface": "#161617",
+    "--bg": "#0a0b0c",
+    "--surface": "#141516",
+    "--surface-raised": "#1a1b1d",
     "--surface-soft": "#1c1c1e",
     "--ink": "#f2f2f2",
     "--ink-soft": "#d6d6d6",
     "--muted": "#9a9a9a",
     "--muted-soft": "#7a7a7a",
-    "--line": "#2a2a2c",
-    "--line-strong": "#3a3a3e",
+    "--line": "#2a2c2e",
+    "--line-strong": "#3a3c40",
     "--accent": "#b54a4a",
     "--accent-contrast": "#ffffff",
-    "--hover-tint": "rgba(255,255,255,0.04)"
+    "--cta": "#f2f2f2",
+    "--cta-contrast": "#0a0a0a",
+    "--ok": "#3dcf8e",
+    "--hover-tint": "rgba(255,255,255,0.04)",
+    "--shadow-card": "0 0 0 1px rgba(255,255,255,.08), 0 16px 40px rgba(0,0,0,.45)",
+    "--shadow-soft": "0 0 0 1px rgba(255,255,255,.06)"
   };
   const root = customProps(ruleBody(css, ":root,"));
   for (const [key, value] of Object.entries(day)) assert.equal(root[key], value, key);
@@ -146,10 +159,18 @@ test("day and night tokens move together", () => {
     assert.equal(systemNight[key], value, `system ${key}`);
   }
   assert.doesNotMatch(css, /--accent:\s*#(?:0a0a0a|f5f5f5)/i);
-  assert.match(css, /--radius-sm:\s*8px/);
-  assert.match(css, /--radius-md:\s*12px/);
+  assert.match(css, /--radius-sm:\s*10px/);
+  assert.match(css, /--radius-md:\s*16px/);
+  assert.match(css, /--radius-lg:\s*22px/);
   assert.match(css, /--radius-pill:\s*999px/);
-  assert.match(css, /--shadow:\s*none/);
+  assert.match(css, /--shadow-card:\s*0 1px 2px rgba\(0,0,0,\.04\), 0 12px 32px rgba\(0,0,0,\.08\)/);
+  assert.match(css, /--shadow-card:\s*0 0 0 1px rgba\(255,255,255,\.08\), 0 16px 40px rgba\(0,0,0,\.45\)/);
+  assert.doesNotMatch(css, /--shadow-card:\s*none/);
+  assert.doesNotMatch(css, /--shadow:\s*none/);
+  assert.match(css, /main\s*\{[^}]*background:\s*var\(--surface\)/);
+  assert.match(css, /main\s*\{[^}]*border-radius:\s*var\(--radius-lg\)/);
+  assert.match(css, /main\s*\{[^}]*box-shadow:\s*var\(--shadow-card\)/);
+  assert.match(css, /main\s*\{[^}]*padding-inline:\s*var\(--inset-card\)/);
   assert.match(css, /--measure:\s*36rem/);
   assert.match(css, /--measure-index:\s*40rem/);
   assert.match(ruleBody(css, ".is-home .top-inner,"), /max-width:\s*var\(--measure-index\)/);
@@ -235,9 +256,9 @@ test("index, summary, and original use the reading rhythm", () => {
   assert.match(summary, /border-bottom:\s*1px solid var\(--line\)/);
   assert.match(summary, /padding-top:\s*var\(--s-5\)/);
   assert.match(summary, /padding-bottom:\s*var\(--s-5\)/);
-  assert.match(summary, /width:\s*100vw/);
-  assert.match(summary, /margin-left:\s*calc\(50% - 50vw\)/);
-  assert.match(summary, /padding-left:\s*calc\(50vw - 50%\)/);
+  assert.match(summary, /padding-inline:\s*var\(--s-4\)/);
+  assert.match(summary, /border-radius:\s*var\(--radius-md\)/);
+  assert.doesNotMatch(summary, /width:\s*100vw/);
   assert.match(ruleBody(css, ".label-note"), /margin:\s*var\(--s-3\) 0 var\(--s-2\)/);
   assert.match(ruleBody(css, ".summary-body p"), /margin:\s*var\(--s-3\) 0/);
   assert.match(ruleBody(css, ".summary-body ul,"), /padding-left:\s*1\.25em/);
@@ -275,7 +296,7 @@ test("back to top is one bottom-right accent pill", () => {
   assert.match(button, /border-radius:\s*var\(--radius-pill\)/);
   assert.match(button, /border:\s*1px solid var\(--accent\)/);
   assert.match(button, /background:\s*var\(--accent\)/);
-  assert.match(button, /box-shadow:\s*var\(--shadow\)/);
+  assert.match(button, /box-shadow:\s*none/);
   assert.match(button, /color:\s*var\(--accent-contrast\)/);
   assert.match(button, /right:\s*calc\(var\(--s-4\) \+ env\(safe-area-inset-right, 0px\)\)/);
   assert.match(button, /bottom:\s*calc\(var\(--s-4\) \+ env\(safe-area-inset-bottom, 0px\)\)/);
