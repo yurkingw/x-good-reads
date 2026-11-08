@@ -96,7 +96,7 @@ test("type scale is six roles with a real summary/original split", () => {
   assert.match(ruleBody(css, ".summary-body"), /line-height:\s*var\(--t4-lh\)/);
   assert.match(ruleBody(css, ".summary-body.is-zh"), /line-height:\s*1\.7/);
   assert.doesNotMatch(ruleBody(css, ".summary-body.is-zh"), /font-size/);
-  assert.match(ruleBody(css, ".index-title"), /font-size:\s*var\(--t4-size\)/);
+  assert.match(ruleBody(css, ".index-title"), /font-size:\s*var\(--t3-size\)/);
   assert.match(ruleBody(css, ".index-title"), /font-weight:\s*600/);
   assert.match(ruleBody(css, ".summary-body h3"), /font-weight:\s*600/);
   assert.match(ruleBody(css, ".seg"), /font-size:\s*var\(--t6-size\)/);

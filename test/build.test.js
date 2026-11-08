@@ -494,7 +494,7 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
     };
   });
   assert.equal(home.h1, 22);
-  assert.equal(home.title, 14);
+  assert.equal(home.title, 16);
   assert.equal(home.titleWeight, "600");
   assert.equal(home.byline, 11);
   assert.notEqual(home.bylineColor, home.titleColor);

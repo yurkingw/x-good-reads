@@ -7,19 +7,22 @@ permalink: /
 {% if posts.length %}
 <ul class="index">
   {% for post in posts %}
-  <li>
+  <li{% if loop.first %} class="index-lead"{% endif %}>
     <a href="{{ post.page_url | url }}">
       <span class="index-title">{{ post.title }}</span>
+      {% set excerpt = post.summary_en or post.summary_zh %}
+      {% if excerpt %}
+      <span class="index-excerpt">{{ excerpt }}</span>
+      {% endif %}
       <span class="byline">
         {{ post.author_name or "Unknown author" }}
         {% if post.author_handle %} · @{{ post.author_handle }}{% endif %}
         {% if post.created_at %}<span class="byline-time"> · <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time></span>{% endif %}
       </span>
-      {% set excerpt = post.summary_en or post.summary_zh %}
-      {% if excerpt %}
-      <span class="index-excerpt">{{ excerpt }}</span>
-      {% endif %}
     </a>
+    {% if loop.first %}
+    <a class="read-cta" href="{{ post.page_url | url }}">Read</a>
+    {% endif %}
   </li>
   {% endfor %}
 </ul>
