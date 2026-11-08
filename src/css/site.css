@@ -157,7 +157,6 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  padding-inline: var(--s-2);
   background-color: var(--bg);
   background-image: var(--bg-image);
   background-attachment: fixed;
@@ -427,6 +426,20 @@ main {
 }
 
 .byline-time { white-space: nowrap; }
+
+.index-excerpt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
+  margin-top: var(--s-2);
+  color: var(--ink-soft);
+  font-size: var(--t4-size);
+  font-weight: var(--t4-weight);
+  line-height: var(--t4-lh);
+  letter-spacing: var(--t4-track);
+  overflow-wrap: anywhere;
+}
 
 .empty {
   margin: var(--s-5) 0 0;

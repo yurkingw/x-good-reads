@@ -15,6 +15,10 @@ permalink: /
         {% if post.author_handle %} · @{{ post.author_handle }}{% endif %}
         {% if post.created_at %}<span class="byline-time"> · <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time></span>{% endif %}
       </span>
+      {% set excerpt = post.summary_en or post.summary_zh %}
+      {% if excerpt %}
+      <span class="index-excerpt">{{ excerpt }}</span>
+      {% endif %}
     </a>
   </li>
   {% endfor %}
