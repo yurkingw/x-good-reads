@@ -820,18 +820,20 @@ main {
     bottom: calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Side lane so body text stays left of the fixed Top box and its focus ring. Header stays full width: the button is below the header once it is visible. */
   main,
   .notice {
     padding-inline-end: calc(var(--s-3) + 46px + 2px + var(--s-1) + var(--s-1) + env(safe-area-inset-right, 0px));
   }
 }
 
-/* Same lane through 663px. At 664px the centered column's own margin clears the button. Above 390px the button's right offset is --s-4, so the lane uses that offset. */
-@media (min-width: 391px) and (max-width: 663px) {
+/* Above 390px the button sits on --s-4. Keep 4px between the text box and the focus ring, and let the extra inset fall as the centered column's margin grows. */
+@media (min-width: 391px) {
   main,
   .notice {
-    padding-inline-end: calc(var(--s-4) + 46px + 2px + var(--s-1) + var(--s-1) + env(safe-area-inset-right, 0px));
+    padding-inline-end: max(
+      var(--inset-card),
+      calc(var(--s-4) + 46px + 2px + var(--s-1) + var(--s-1) - max(0px, (100vw - var(--measure)) / 2))
+    );
   }
 }
 
