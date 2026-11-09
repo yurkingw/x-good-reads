@@ -827,6 +827,14 @@ main {
   }
 }
 
+/* Same lane through 663px. At 664px the centered column's own margin clears the button. Above 390px the button's right offset is --s-4, so the lane uses that offset. */
+@media (min-width: 391px) and (max-width: 663px) {
+  main,
+  .notice {
+    padding-inline-end: calc(var(--s-4) + 46px + 2px + var(--s-1) + var(--s-1) + env(safe-area-inset-right, 0px));
+  }
+}
+
 @keyframes sheet-in {
   from {
     opacity: 0;
