@@ -1,0 +1,305 @@
+
+> test
+> node --test test/*.js
+
+TAP version 13
+# [11ty] Writing ./_site/index.html from ./src/index.njk
+# [11ty] Writing ./_site/x/2117762468177183064/index.html from ./src/post.njk
+# [11ty] Writing ./_site/x/2117512471930167377/index.html from ./src/post.njk
+# [11ty] Copied 7 Wrote 3 files in 0.13 seconds (v3.1.8)
+# EN_UI_RUNTIME {"status":"ran","rows":[{"route":"post","viewport":"1280x800","theme":"day","maxOver":0,"scrollWidth":1280,"clientWidth":1280,"hit":44,"pressed":{"background":"rgb(47, 95, 158)","color":"rgb(255, 255, 255)"}},{"route":"post","viewport":"1280x800","theme":"night","maxOver":0,"scrollWidth":1280,"clientWidth":1280,"hit":44,"pressed":{"background":"rgb(181, 74, 74)","color":"rgb(255, 255, 255)"}},{"route":"post","viewport":"375x812","theme":"day","maxOver":0,"scrollWidth":375,"clientWidth":375,"hit":44,"pressed":{"background":"rgb(47, 95, 158)","color":"rgb(255, 255, 255)"}},{"route":"post","viewport":"375x812","theme":"night","maxOver":0,"scrollWidth":375,"clientWidth":375,"hit":44,"pressed":{"background":"rgb(181, 74, 74)","color":"rgb(255, 255, 255)"}},{"route":"index","viewport":"1280x800","theme":"day","maxOver":0,"scrollWidth":1280,"clientWidth":1280,"hit":44,"pressed":{"background":"rgb(47, 95, 158)","color":"rgb(255, 255, 255)"}},{"route":"index","viewport":"1280x800","theme":"night","maxOver":0,"scrollWidth":1280,"clientWidth":1280,"hit":44,"pressed":{"background":"rgb(181, 74, 74)","color":"rgb(255, 255, 255)"}},{"route":"index","viewport":"375x812","theme":"day","maxOver":0,"scrollWidth":375,"clientWidth":375,"hit":44,"pressed":{"background":"rgb(47, 95, 158)","color":"rgb(255, 255, 255)"}},{"route":"index","viewport":"375x812","theme":"night","maxOver":0,"scrollWidth":375,"clientWidth":375,"hit":44,"pressed":{"background":"rgb(181, 74, 74)","color":"rgb(255, 255, 255)"}}]}
+# Subtest: static build matches the archive page contract
+ok 1 - static build matches the archive page contract
+  ---
+  duration_ms: 7376.78575
+  type: 'test'
+  ...
+# Subtest: contentLang marks Chinese blocks and leaves a Latin block in English
+ok 2 - contentLang marks Chinese blocks and leaves a Latin block in English
+  ---
+  duration_ms: 0.778259
+  type: 'test'
+  ...
+# Subtest: residual UI scan ignores Chinese blocks tagged zh-CN
+ok 3 - residual UI scan ignores Chinese blocks tagged zh-CN
+  ---
+  duration_ms: 0.47845
+  type: 'test'
+  ...
+# Subtest: ingest workflow exposes the bot contract and dispatches Pages
+ok 4 - ingest workflow exposes the bot contract and dispatches Pages
+  ---
+  duration_ms: 0.853488
+  type: 'test'
+  ...
+# Subtest: pages workflow is the only publish path
+ok 5 - pages workflow is the only publish path
+  ---
+  duration_ms: 0.205884
+  type: 'test'
+  ...
+# Subtest: ingest counts summaries with the published rules and fails before a file is written
+ok 6 - ingest counts summaries with the published rules and fails before a file is written
+  ---
+  duration_ms: 0.317611
+  type: 'test'
+  ...
+# Subtest: ingest workflow records the summary limits before the commit step
+ok 7 - ingest workflow records the summary limits before the commit step
+  ---
+  duration_ms: 0.139608
+  type: 'test'
+  ...
+# Subtest: readme documents summary length limits
+ok 8 - readme documents summary length limits
+  ---
+  duration_ms: 0.221102
+  type: 'test'
+  ...
+# Subtest: archived critical-thinking summaries stay inside the target bands
+ok 9 - archived critical-thinking summaries stay inside the target bands
+  ---
+  duration_ms: 0.893491
+  type: 'test'
+  ...
+# Subtest: readme documents the contract and the live urls
+ok 10 - readme documents the contract and the live urls
+  ---
+  duration_ms: 1.099777
+  type: 'test'
+  ...
+# Subtest: repo copy does not name a chat app or a city clock
+ok 11 - repo copy does not name a chat app or a city clock
+  ---
+  duration_ms: 4.460056
+  type: 'test'
+  ...
+# Subtest: public lede has no parenthetical
+ok 12 - public lede has no parenthetical
+  ---
+  duration_ms: 0.243267
+  type: 'test'
+  ...
+# Subtest: spacing uses only the eight-step scale
+ok 13 - spacing uses only the eight-step scale
+  ---
+  duration_ms: 2.366601
+  type: 'test'
+  ...
+# Subtest: type scale is six roles with a real summary/original split
+ok 14 - type scale is six roles with a real summary/original split
+  ---
+  duration_ms: 2.337571
+  type: 'test'
+  ...
+# Subtest: day and night tokens move together
+ok 15 - day and night tokens move together
+  ---
+  duration_ms: 0.798122
+  type: 'test'
+  ...
+# Subtest: shared header links home and posts back to the root site
+ok 16 - shared header links home and posts back to the root site
+  ---
+  duration_ms: 0.404421
+  type: 'test'
+  ...
+# Subtest: theme and language share one segmented control
+ok 17 - theme and language share one segmented control
+  ---
+  duration_ms: 0.700747
+  type: 'test'
+  ...
+# Subtest: index, summary, and original use the reading rhythm
+ok 18 - index, summary, and original use the reading rhythm
+  ---
+  duration_ms: 2.2159
+  type: 'test'
+  ...
+# Subtest: back to top is one bottom-right accent pill
+ok 19 - back to top is one bottom-right accent pill
+  ---
+  duration_ms: 1.144219
+  type: 'test'
+  ...
+# No full_text was provided. Using best-effort fetched text. X articles often return only a link; check what was captured.
+# No full_text was provided. Using best-effort fetched text. X articles often return only a link; check what was captured.
+# No full_text was provided. Using best-effort fetched text. X articles often return only a link; check what was captured.
+# No full_text was provided. Using best-effort fetched text. X articles often return only a link; check what was captured.
+# Subtest: resolveStatusId accepts either input and rejects a mismatch
+ok 20 - resolveStatusId accepts either input and rejects a mismatch
+  ---
+  duration_ms: 0.979609
+  type: 'test'
+  ...
+# Subtest: does not fetch when full_text is provided
+ok 21 - does not fetch when full_text is provided
+  ---
+  duration_ms: 1.408987
+  type: 'test'
+  ...
+# Subtest: fetch failure writes nothing
+ok 22 - fetch failure writes nothing
+  ---
+  duration_ms: 0.626569
+  type: 'test'
+  ...
+# Subtest: uses the second mirror when the first one fails and hosts media locally
+ok 23 - uses the second mirror when the first one fails and hosts media locally
+  ---
+  duration_ms: 2.062004
+  type: 'test'
+  ...
+# Subtest: pickFetchedPost prefers an mp4 over a playlist and keeps the thumbnail separate
+ok 24 - pickFetchedPost prefers an mp4 over a playlist and keeps the thumbnail separate
+  ---
+  duration_ms: 0.382145
+  type: 'test'
+  ...
+# Subtest: media download failure does not write a remote thumbnail as success
+ok 25 - media download failure does not write a remote thumbnail as success
+  ---
+  duration_ms: 0.494997
+  type: 'test'
+  ...
+# Subtest: rejects an HTML payload or a file over 95MB instead of archiving it
+ok 26 - rejects an HTML payload or a file over 95MB instead of archiving it
+  ---
+  duration_ms: 4.391948
+  type: 'test'
+  ...
+# Subtest: pickFetchedPost prefers article text
+ok 27 - pickFetchedPost prefers article text
+  ---
+  duration_ms: 0.131669
+  type: 'test'
+  ...
+# Subtest: rejects an over-limit English summary and writes nothing
+ok 28 - rejects an over-limit English summary and writes nothing
+  ---
+  duration_ms: 2.055908
+  type: 'test'
+  ...
+# Subtest: rejects an over-limit Chinese summary and writes nothing
+ok 29 - rejects an over-limit Chinese summary and writes nothing
+  ---
+  duration_ms: 0.664907
+  type: 'test'
+  ...
+# Subtest: rejects when both summaries are over the limit and writes nothing
+ok 30 - rejects when both summaries are over the limit and writes nothing
+  ---
+  duration_ms: 0.440388
+  type: 'test'
+  ...
+# Subtest: accepts empty summaries and summaries inside the target band
+ok 31 - accepts empty summaries and summaries inside the target band
+  ---
+  duration_ms: 0.560154
+  type: 'test'
+  ...
+# Subtest: accepts summaries at the hard max, including hyphenated words and spaced Chinese
+ok 32 - accepts summaries at the hard max, including hyphenated words and spaced Chinese
+  ---
+  duration_ms: 0.461894
+  type: 'test'
+  ...
+# Subtest: cli writes a file and a status id output
+ok 33 - cli writes a file and a status id output
+  ---
+  duration_ms: 98.017802
+  type: 'test'
+  ...
+# Subtest: formats an ISO instant as UTC without shifting the clock
+ok 34 - formats an ISO instant as UTC without shifting the clock
+  ---
+  duration_ms: 11.31139
+  type: 'test'
+  ...
+# Subtest: rejects an unquoted snowflake id and a mismatched filename
+ok 35 - rejects an unquoted snowflake id and a mismatched filename
+  ---
+  duration_ms: 1.300047
+  type: 'test'
+  ...
+# Subtest: loads markdown and keeps image urls that are not already in the text
+ok 36 - loads markdown and keeps image urls that are not already in the text
+  ---
+  duration_ms: 3.384604
+  type: 'test'
+  ...
+# Subtest: keeps site-hosted images and videos and rejects X CDN media
+ok 37 - keeps site-hosted images and videos and rejects X CDN media
+  ---
+  duration_ms: 0.391096
+  type: 'test'
+  ...
+# Subtest: loads a site video from a content file
+ok 38 - loads a site video from a content file
+  ---
+  duration_ms: 0.580036
+  type: 'test'
+  ...
+# Subtest: picks a hosted photo, then a video poster, then the site default
+ok 39 - picks a hosted photo, then a video poster, then the site default
+  ---
+  duration_ms: 0.184747
+  type: 'test'
+  ...
+# Subtest: uses an animated GIF still frame when that frame is present
+ok 40 - uses an animated GIF still frame when that frame is present
+  ---
+  duration_ms: 0.385757
+  type: 'test'
+  ...
+# Subtest: a video post without a poster field uses poster.jpg beside the video
+ok 41 - a video post without a poster field uses poster.jpg beside the video
+  ---
+  duration_ms: 0.126164
+  type: 'test'
+  ...
+# Subtest: loaded posts expose an absolute in-site og_image
+ok 42 - loaded posts expose an absolute in-site og_image
+  ---
+  duration_ms: 1.481921
+  type: 'test'
+  ...
+# Subtest: fills a missing title and original url
+ok 43 - fills a missing title and original url
+  ---
+  duration_ms: 0.473341
+  type: 'test'
+  ...
+# Subtest: preserves single newlines and linkifies urls
+ok 44 - preserves single newlines and linkifies urls
+  ---
+  duration_ms: 8.476955
+  type: 'test'
+  ...
+# Subtest: renders markdown headings and images
+ok 45 - renders markdown headings and images
+  ---
+  duration_ms: 1.645341
+  type: 'test'
+  ...
+# Subtest: keeps external page urls as links
+ok 46 - keeps external page urls as links
+  ---
+  duration_ms: 0.544956
+  type: 'test'
+  ...
+# Subtest: escapes raw html
+ok 47 - escapes raw html
+  ---
+  duration_ms: 0.460302
+  type: 'test'
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 47
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7465.211574
