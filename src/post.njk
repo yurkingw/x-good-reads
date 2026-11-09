@@ -7,14 +7,14 @@ pagination:
 permalink: "/x/{{ pagination.items[0].status_id }}/"
 ---
 <article>
-  <h1>{{ post.title }}</h1>
+  <h1{% if (post.title | contentLang) == "zh-CN" %} lang="zh-CN"{% endif %}>{{ post.title }}</h1>
 
   <section class="meta" id="meta" aria-labelledby="meta-heading">
     <h2 id="meta-heading">Source</h2>
     <dl>
       <div>
         <dt>Author</dt>
-        <dd class="author-name">{{ post.author_name or "Unknown" }}</dd>
+        <dd class="author-name"{% if (post.author_name | contentLang) == "zh-CN" %} lang="zh-CN"{% endif %}>{{ post.author_name or "Unknown" }}</dd>
       </div>
       <div>
         <dt>Handle</dt>
@@ -42,9 +42,9 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
       <h2 id="summary-heading">AI summary</h2>
       {% if post.summary_en or post.summary_zh %}
       <div class="seg lang-switch" role="group" aria-label="Summary language">
-        <button type="button" data-lang="en" aria-pressed="{{ 'true' if post.summary_en else 'false' }}"{% if not post.summary_en %} disabled{% endif %}>EN</button>
+        <button type="button" data-lang="en" aria-pressed="{{ 'true' if post.summary_en else 'false' }}"{% if not post.summary_en %} disabled{% endif %}>English</button>
         <span class="seg-gap" aria-hidden="true">·</span>
-        <button type="button" data-lang="zh" aria-pressed="{{ 'true' if (post.summary_zh and not post.summary_en) else 'false' }}"{% if not post.summary_zh %} disabled{% endif %}>中文</button>
+        <button type="button" data-lang="zh" aria-pressed="{{ 'true' if (post.summary_zh and not post.summary_en) else 'false' }}"{% if not post.summary_zh %} disabled{% endif %}>Chinese</button>
       </div>
       {% endif %}
     </div>
@@ -63,7 +63,7 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
     <div class="summary-body is-zh" id="summary-zh" lang="zh-CN">{{ post.summary_zh | renderText | safe }}</div>
     {% endif %}
     {% if post.summary_en and post.summary_zh %}
-    <noscript><a href="#summary-zh">中文</a></noscript>
+    <noscript><a href="#summary-zh">Chinese</a></noscript>
     <script>
       (function () {
         var root = document.currentScript.closest(".summary");
@@ -83,9 +83,10 @@ permalink: "/x/{{ pagination.items[0].status_id }}/"
     {% endif %}
   </section>
 
-  <section class="original" id="original" lang="en" aria-labelledby="original-heading">
+  <section class="original" id="original" aria-labelledby="original-heading">
     <h2 id="original-heading">Original</h2>
-    <div class="original-body">{{ post.full_text | renderText | safe }}</div>
+    {% set originalLang = post.full_text | contentLang %}
+    <div class="original-body"{% if originalLang %} lang="{{ originalLang }}"{% endif %}>{{ post.full_text | renderText | safe }}</div>
     {% if post.videos and post.videos.length %}
     <div class="videos">
       {% for video in post.videos %}

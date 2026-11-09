@@ -7,11 +7,12 @@ import path from "node:path";
 import test from "node:test";
 import { footerNotice } from "../site.config.js";
 import { loadPosts } from "../src/lib/posts.js";
+import { residualHan } from "./lib/ui-scan.js";
 
 const root = process.cwd();
 const sampleId = "2117512471930167377";
 
-test("static build matches the archive page contract", { timeout: 90_000 }, async () => {
+test("static build matches the archive page contract", { timeout: 180_000 }, async () => {
   execFileSync(path.join(root, "node_modules", ".bin", "eleventy"), [], {
     cwd: root,
     stdio: "inherit"
@@ -28,7 +29,7 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(index, /<a class="root-link" href="https:\/\/yurkingw\.github\.io\/">Home<\/a>/);
   assert.match(index, /<a class="brand" href="\/x-good-reads\/">X Good Reads<\/a>/);
   assert.match(index, /aria-label="Color theme"/);
-  assert.match(index, /<button type="button" class="back-to-top" aria-label="回顶" hidden[^>]*>回顶<\/button>/);
+  assert.match(index, /<button type="button" class="back-to-top" aria-label="Back to top" title="Back to top" hidden[^>]*>Top<\/button>/);
   assert.match(index, /data-theme-set="system"[^>]*aria-pressed="true"[^>]*>Auto<\/button>/);
   assert.match(index, /data-theme-set="day"[^>]*>Day<\/button>/);
   assert.match(index, /data-theme-set="night"[^>]*>Night<\/button>/);
@@ -116,14 +117,17 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.ok(sourceAt >= 0 && summaryAt >= 0 && originalAt >= 0);
   assert.ok(sourceAt < summaryAt && summaryAt < originalAt, "DOM order is Source, then Summary, then Original");
   assert.match(sample, /data-lang="en"[^>]*aria-pressed="true"/);
-  assert.match(sample, /data-lang="zh"[^>]*aria-pressed="false"[^>]*>中文<\/button>/);
+  assert.match(sample, /data-lang="en"[^>]*>English<\/button>/);
+  assert.match(sample, /data-lang="zh"[^>]*aria-pressed="false"[^>]*>Chinese<\/button>/);
+  assert.match(sample, /<noscript><a href="#summary-zh">Chinese<\/a><\/noscript>/);
+  assert.doesNotMatch(sample, />EN<\/button>|>中文<|>回顶</);
   assert.match(sample, /aria-label="Summary language"/);
   assert.ok(sample.indexOf('class="summary-body is-en"') < sample.indexOf('id="summary-zh"'));
   assert.doesNotMatch(englishSummary, /认知投降/);
   assert.match(sample, /<time datetime="2026-11-03T07:01:29\.000Z">2026-11-03 07:01 UTC<\/time>/);
   assert.doesNotMatch(sample, />2026-11-03T07:01:29\.000Z</);
   assert.match(sample, /aria-label="Color theme"/);
-  assert.match(sample, /<button type="button" class="back-to-top" aria-label="回顶" hidden[^>]*>回顶<\/button>/);
+  assert.match(sample, /<button type="button" class="back-to-top" aria-label="Back to top" title="Back to top" hidden[^>]*>Top<\/button>/);
   assert.equal((sample.match(/class="back-to-top"/g) || []).length, 1);
   assert.match(sample, /data-theme-set="system"[^>]*aria-pressed="true"/);
   assert.match(sample, /lang="en"/);
@@ -144,6 +148,13 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
   assert.match(videoOriginal, /type="video\/mp4"/);
   assert.match(videoPage, /USD 6\.34 billion/);
   assert.match(videoPage, /63\.4 亿美元/);
+  assert.match(sample, /<div class="original-body" lang="en">/);
+  assert.doesNotMatch(original, /lang="zh-CN"/);
+  assert.match(videoOriginal, /<div class="original-body" lang="zh-CN">/);
+  assert.doesNotMatch(videoOriginal, /lang="en"/);
+  assert.match(videoPage, /<dd class="author-name" lang="zh-CN">杀破狼 WolfyXBT<\/dd>/);
+  assert.match(index, /<span lang="zh-CN">杀破狼 WolfyXBT<\/span>/);
+  assertNoResidualUi(path.join(root, "_site"));
   assert.doesNotMatch(videoPage, /pbs\.twimg\.com|video\.twimg\.com|twimg\.com/);
   const videoOg = "https://yurkingw.github.io/x-good-reads/media/x/2117762468177183064/poster.jpg";
   assert.match(videoPage, new RegExp(`<meta property="og:image" content="${videoOg}">`));
@@ -245,6 +256,28 @@ test("static build matches the archive page contract", { timeout: 90_000 }, asyn
 
   await assertToggleInChrome(sampleId);
 });
+
+function walkHtml(dir, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkHtml(full, out);
+    else if (entry.name.endsWith(".html")) out.push(full);
+  }
+  return out;
+}
+
+function assertNoResidualUi(siteDir) {
+  const files = walkHtml(siteDir);
+  assert.ok(files.length >= 3, `expected built pages, saw ${files.length}`);
+  for (const file of files) {
+    const html = fs.readFileSync(file, "utf8");
+    const han = residualHan(html);
+    assert.equal(han, "", `${file} residual UI: ${han}`);
+    assert.equal((html.match(/class="back-to-top"/g) || []).length, 1, file);
+    assert.match(html, /<button type="button" class="back-to-top" aria-label="Back to top" title="Back to top" hidden[^>]*>Top<\/button>/);
+    assert.doesNotMatch(html, />Back to top<|>回顶<|>EN<\/button>|>中文<\/button>/);
+  }
+}
 
 function bodyBackground(page) {
   return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
@@ -557,9 +590,204 @@ function startSite(siteDir) {
   });
 }
 
+async function readOverflow(page) {
+  return page.evaluate(() => {
+    const vw = document.documentElement.clientWidth;
+    let maxOver = 0;
+    const offenders = [];
+    for (const el of document.body.querySelectorAll("*")) {
+      const style = getComputedStyle(el);
+      if (style.display === "none" || style.visibility === "hidden") continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 1 && rect.height < 1) continue;
+      const over = Math.max(rect.right - vw, -rect.left);
+      if (over > maxOver) maxOver = over;
+      if (over > 1 && offenders.length < 8) {
+        offenders.push({
+          tag: el.tagName,
+          id: el.id,
+          className: String(el.className).slice(0, 80),
+          over: Math.round(over * 100) / 100
+        });
+      }
+    }
+    const pills = [...document.querySelectorAll(".seg button")].map((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const text = range.getBoundingClientRect();
+      const box = el.getBoundingClientRect();
+      return {
+        label: el.textContent.trim(),
+        cut: text.width > 0 && (text.right > box.right + 1 || text.left < box.left - 1)
+      };
+    });
+    const button = document.querySelector(".back-to-top");
+    const box = button.getBoundingClientRect();
+    return {
+      maxOver: Math.round(maxOver * 100) / 100,
+      clientWidth: vw,
+      scrollWidth: document.documentElement.scrollWidth,
+      offenders,
+      pills,
+      top: {
+        text: button.textContent,
+        aria: button.getAttribute("aria-label"),
+        title: button.getAttribute("title"),
+        hidden: button.hidden,
+        count: document.querySelectorAll(".back-to-top").length,
+        hit: Math.round(parseFloat(getComputedStyle(button, "::before").width)),
+        box: Math.round(Math.max(box.width, box.height))
+      }
+    };
+  });
+}
+
+async function setTheme(page, mode) {
+  await page.locator(`[data-theme-set="${mode}"]`).click();
+  if (mode === "system") {
+    assert.equal(await page.locator("html").getAttribute("data-theme"), null);
+    return;
+  }
+  assert.equal(await page.locator("html").getAttribute("data-theme"), mode);
+}
+
+async function assertTopControl(page) {
+  await page.evaluate(() => {
+    window.__scrollOpts = [];
+    const orig = window.scrollTo.bind(window);
+    window.scrollTo = (opts) => {
+      window.__scrollOpts.push(opts && typeof opts === "object" ? { top: opts.top, behavior: opts.behavior } : opts);
+      return orig(opts);
+    };
+  });
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+  await page.evaluate(() => { window.__scrollOpts = []; });
+  const atRest = await page.locator(".back-to-top").evaluate((button) => ({
+    hidden: button.hidden,
+    text: button.textContent,
+    aria: button.getAttribute("aria-label"),
+    title: button.getAttribute("title")
+  }));
+  assert.equal(atRest.hidden, true);
+  assert.equal(atRest.text, "Top");
+  assert.equal(atRest.aria, "Back to top");
+  assert.equal(atRest.title, "Back to top");
+
+  await page.evaluate(() => window.scrollTo({ top: window.innerHeight + 40, behavior: "auto" }));
+  await page.waitForFunction(() => {
+    const button = document.querySelector(".back-to-top");
+    return button && button.hidden === false && button.classList.contains("is-visible") && button.getAttribute("aria-hidden") === "false";
+  });
+
+  const reached = await page.evaluate(() => {
+    const nodes = [...document.querySelectorAll("a, button")].filter((el) => !el.disabled && !el.hidden && el.getAttribute("aria-hidden") !== "true");
+    const button = document.querySelector(".back-to-top");
+    const index = nodes.indexOf(button);
+    if (index <= 0) return { index };
+    nodes[index - 1].focus();
+    return { index };
+  });
+  assert.ok(reached.index > 0, JSON.stringify(reached));
+  await page.keyboard.press("Tab");
+  assert.equal(await page.evaluate(() => document.activeElement.classList.contains("back-to-top")), true);
+  const ring = await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
+  assert.equal(ring, "solid");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.evaluate(() => { window.__scrollOpts = []; });
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(() => window.scrollY < 2);
+  const reduced = await page.evaluate(() => window.__scrollOpts);
+  assert.ok(reduced.some((item) => item && item.top === 0 && item.behavior === "auto"), JSON.stringify(reduced));
+
+  await page.evaluate(() => window.scrollTo({ top: window.innerHeight + 40, behavior: "auto" }));
+  await page.waitForFunction(() => document.querySelector(".back-to-top")?.classList.contains("is-visible"));
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.locator(".back-to-top").focus();
+  await page.evaluate(() => { window.__scrollOpts = []; });
+  await page.keyboard.press("Space");
+  await page.waitForFunction(() => window.scrollY < 2);
+  const smooth = await page.evaluate(() => window.__scrollOpts);
+  assert.ok(smooth.some((item) => item && item.top === 0 && item.behavior === "smooth"), JSON.stringify(smooth));
+}
+
+async function assertEnViewportMatrix(page, homeUrl, postUrl) {
+  const rows = [];
+  const expectedPressed = {
+    day: { background: "rgb(47, 95, 158)", color: "rgb(255, 255, 255)" },
+    night: { background: "rgb(181, 74, 74)", color: "rgb(255, 255, 255)" }
+  };
+  for (const target of [
+    { name: "post", url: postUrl },
+    { name: "index", url: homeUrl }
+  ]) {
+    for (const viewport of [
+      { width: 1280, height: 800 },
+      { width: 375, height: 812 }
+    ]) {
+      for (const theme of ["day", "night"]) {
+        await page.setViewportSize(viewport);
+        await page.goto(target.url);
+        await page.emulateMedia({ colorScheme: theme === "night" ? "dark" : "light", reducedMotion: "no-preference" });
+        await setTheme(page, theme);
+        await page.evaluate(() => document.fonts.ready);
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: "auto" }));
+        const fit = await readOverflow(page);
+        assert.ok(fit.maxOver <= 1, JSON.stringify({ target: target.name, viewport, theme, fit }));
+        assert.ok(fit.pills.every((pill) => pill.cut === false), JSON.stringify(fit.pills));
+        assert.equal(fit.top.text, "Top");
+        assert.equal(fit.top.aria, "Back to top");
+        assert.equal(fit.top.title, "Back to top");
+        assert.equal(fit.top.count, 1);
+        assert.ok(fit.top.hit >= 44, JSON.stringify(fit.top));
+        const labels = fit.pills.map((pill) => pill.label);
+        if (target.name === "post") {
+          assert.deepEqual(labels, ["Auto", "Day", "Night", "English", "Chinese"]);
+        } else {
+          assert.deepEqual(labels, ["Auto", "Day", "Night"]);
+        }
+        await page.waitForFunction((mode) => {
+          const expected = mode === "day"
+            ? ["rgb(47, 95, 158)", "rgb(255, 255, 255)"]
+            : ["rgb(181, 74, 74)", "rgb(255, 255, 255)"];
+          const style = getComputedStyle(document.querySelector(`[data-theme-set="${mode}"]`));
+          return style.backgroundColor === expected[0] && style.color === expected[1];
+        }, theme);
+        const pressed = await page.locator(`[data-theme-set="${theme}"]`).evaluate((node) => {
+          const style = getComputedStyle(node);
+          return { background: style.backgroundColor, color: style.color };
+        });
+        assert.deepEqual(pressed, expectedPressed[theme]);
+        rows.push({
+          route: target.name,
+          viewport: `${viewport.width}x${viewport.height}`,
+          theme,
+          maxOver: fit.maxOver,
+          scrollWidth: fit.scrollWidth,
+          clientWidth: fit.clientWidth,
+          hit: fit.top.hit,
+          pressed
+        });
+      }
+    }
+  }
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(postUrl);
+  await setTheme(page, "day");
+  await assertTopControl(page);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(postUrl);
+  await setTheme(page, "night");
+  await assertTopControl(page);
+  console.log(`EN_UI_RUNTIME ${JSON.stringify({ status: "ran", rows })}`);
+}
+
 async function assertToggleInChrome(sampleId) {
   const executablePath = chromePath();
-  if (!executablePath) return;
+  if (!executablePath) {
+    console.log("EN_UI_RUNTIME " + JSON.stringify({ status: "skipped", reason: "chrome executable not found" }));
+    return;
+  }
   const { chromium } = await import("playwright-core");
   const server = await startSite(path.join(root, "_site"));
   const browser = await chromium.launch({
@@ -690,6 +918,8 @@ async function assertToggleInChrome(sampleId) {
     assert.equal(await page.locator("html").getAttribute("data-theme"), "night");
     assert.equal(await page.evaluate(() => localStorage.getItem("ygh-theme")), "night");
     assert.equal(await page.locator('[data-theme-set="night"]').getAttribute("aria-pressed"), "true");
+
+    await assertEnViewportMatrix(page, homeUrl, postUrl);
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
