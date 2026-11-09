@@ -1,8 +1,10 @@
 import { pathPrefix } from "./site.config.js";
+import { contentLang } from "./src/lib/content-lang.js";
 import { renderText } from "./src/lib/render.js";
 
 export default function (eleventyConfig) {
   eleventyConfig.addFilter("renderText", (value) => renderText(value));
+  eleventyConfig.addFilter("contentLang", (value) => contentLang(value));
   eleventyConfig.addPassthroughCopy({
     "src/css": "css",
     "src/favicon.svg": "favicon.svg",

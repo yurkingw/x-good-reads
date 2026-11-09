@@ -9,13 +9,15 @@ permalink: /
   {% for post in posts %}
   <li{% if loop.first %} class="index-lead"{% endif %}>
     <a href="{{ post.page_url | url }}">
-      <span class="index-title">{{ post.title }}</span>
+      <span class="index-title"{% if (post.title | contentLang) == "zh-CN" %} lang="zh-CN"{% endif %}>{{ post.title }}</span>
       {% set excerpt = post.summary_en or post.summary_zh %}
       {% if excerpt %}
-      <span class="index-excerpt">{{ excerpt }}</span>
+      <span class="index-excerpt"{% if (not post.summary_en) and post.summary_zh %} lang="zh-CN"{% endif %}>{{ excerpt }}</span>
       {% endif %}
       <span class="byline">
-        {{ post.author_name or "Unknown author" }}
+        {% if post.author_name %}
+        {% if (post.author_name | contentLang) == "zh-CN" %}<span lang="zh-CN">{{ post.author_name }}</span>{% else %}{{ post.author_name }}{% endif %}
+        {% else %}Unknown author{% endif %}
         {% if post.author_handle %} · @{{ post.author_handle }}{% endif %}
         {% if post.created_at %}<span class="byline-time"> · <time datetime="{{ post.created_at }}">{{ post.created_at_display or post.created_at }}</time></span>{% endif %}
       </span>

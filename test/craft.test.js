@@ -278,8 +278,8 @@ test("index, summary, and original use the reading rhythm", () => {
 
 test("back to top is one bottom-right accent pill", () => {
   assert.equal((base.match(/class="back-to-top"/g) || []).length, 1);
-  assert.match(base, /<button type="button" class="back-to-top" aria-label="回顶" hidden[^>]*>回顶<\/button>/);
-  assert.doesNotMatch(base, /Back to top|回到顶部|class="back-page"/);
+  assert.match(base, /<button type="button" class="back-to-top" aria-label="Back to top" title="Back to top" hidden[^>]*>Top<\/button>/);
+  assert.doesNotMatch(base, />Back to top<|>回顶<|>回到顶部<|↑|⬆|class="back-page"/);
   assert.match(base, /scrollY >= window\.innerHeight/);
   assert.match(base, /scrollTo\(\{ top: 0, behavior: prefersReducedMotion\(\) \? "auto" : "smooth" \}\)/);
   assert.match(base, /prefers-reduced-motion: reduce/);

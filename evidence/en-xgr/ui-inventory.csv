@@ -1,0 +1,37 @@
+route,kind,source,text,dictionary,action
+all,nav,base.njk,Home,首页 → Home,already English
+all,brand,base.njk / site.config.js,X Good Reads,product name,kept
+all,group,base.njk aria-label,Color theme,主题 → Theme,already English; kept (no new label)
+all,button,base.njk,Auto,主题随系统 → Auto,already English
+all,button,base.njk,Day,日间 → Day,already English
+all,button,base.njk,Night,夜间 → Night,already English
+all,button-visible,base.njk .back-to-top,Top,回顶可见 → Top,changed from 回顶
+all,aria-label,base.njk .back-to-top,Back to top,回顶 aria → Back to top,changed from 回顶
+all,title,base.njk .back-to-top,Back to top,回顶 title → Back to top,added title
+index,h1,index.njk,X Good Reads,product name,kept
+index,lede,index.njk / site.config.js,"One X post, one page. Share the link anywhere.",,already English
+index,empty,index.njk,No posts yet.,暂无条目 → No entries yet.,already English; kept (no 暂无条目 control)
+index,fallback,index.njk,Unknown author,,already English
+index,cta,index.njk,Read,阅读 → Read,already English
+post,h2,post.njk,Source,来源 → Source,already English
+post,dt,post.njk,Author,,already English
+post,dt,post.njk,Handle,,already English
+post,dt,post.njk,Published,,already English
+post,dt,post.njk,Original,,already English
+post,fallback,post.njk,Unknown,,already English
+post,link,post.njk,Open on X,在 X 打开 → Open on X,already English
+post,h2,post.njk,AI summary,,already English
+post,group,post.njk aria-label,Summary language,语言 → Language,already English; kept
+post,button,post.njk,English,英语 / EN → English,changed from EN
+post,button,post.njk,Chinese,中文（控件）→ Chinese,changed from 中文
+post,noscript,post.njk,Chinese,中文（控件）→ Chinese,changed from 中文
+post,note,post.njk,AI-generated for skimming. Not a substitute for the original.,,already English
+post,missing,post.njk,Chinese summary unavailable.,,already English
+post,missing,post.njk,English summary unavailable.,,already English
+post,missing,post.njk,"No summary yet. Add a summary in the content file, then publish.",,already English
+post,h2,post.njk,Original,,already English
+post,aria-label,post.njk video,Post video,,already English
+post,alt,post.njk img,Post image,,already English
+all,footer,site.config.js,Original content belongs to its authors. This site is a readable archive; the source post is authoritative.,,already English
+all,meta,site.config.js description,"One X post, one page. Share the link anywhere.",,already English
+none,absent,dictionary,Show more / Show less / Previous / Next / Archive / Copy link / Skip to content / Loading… / Try again / No results found.,遇到才用,no such control; not added

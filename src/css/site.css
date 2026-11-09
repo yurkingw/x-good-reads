@@ -819,6 +819,22 @@ main {
     right: calc(var(--s-3) + env(safe-area-inset-right, 0px));
     bottom: calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
   }
+
+  main,
+  .notice {
+    padding-inline-end: calc(var(--s-3) + 46px + 2px + var(--s-1) + var(--s-1) + env(safe-area-inset-right, 0px));
+  }
+}
+
+/* Above 390px the button sits on --s-4. Keep 4px between the text box and the focus ring, and let the extra inset fall as the centered column's margin grows. */
+@media (min-width: 391px) {
+  main,
+  .notice {
+    padding-inline-end: max(
+      var(--inset-card),
+      calc(var(--s-4) + 46px + 2px + var(--s-1) + var(--s-1) - max(0px, (100vw - var(--measure)) / 2))
+    );
+  }
 }
 
 @keyframes sheet-in {

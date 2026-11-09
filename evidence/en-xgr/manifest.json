@@ -1,0 +1,91 @@
+{
+  "tested_head": "f156a58016c3340adb7f1a45d79558cec78e77de",
+  "base_sha": "5f9567a33aba75a83ae345feb6af4b600c093d77",
+  "brief_sha256": "6a95006c3cdc69965d0c7e001f729d1e6707721fa6535ca0ba91ef4ffdc65555",
+  "commands": [
+    {
+      "name": "npm test",
+      "start": "2026-11-09T03:55:44Z",
+      "end": "2026-11-09T03:55:51Z",
+      "exit": 0
+    },
+    {
+      "name": "BASE_SHA=5f9567a33aba75a83ae345feb6af4b600c093d77 node scripts/en-ui-inventory.js",
+      "start": "2026-11-09T03:55:51Z",
+      "end": "2026-11-09T03:55:51Z",
+      "exit": 0
+    },
+    {
+      "name": "BASE_SHA=5f9567a33aba75a83ae345feb6af4b600c093d77 OUT_DIR=/tmp/en-xgr-out node scripts/en-ui-inventory.js",
+      "start": "2026-11-09T03:56:40Z",
+      "end": "2026-11-09T03:56:40Z",
+      "exit": 0
+    },
+    {
+      "name": "git diff --exit-code 5f9567a33aba75a83ae345feb6af4b600c093d77 -- content src/lib/render.js src/lib/posts.js src/css/site.css site.config.js",
+      "start": "2026-11-09T03:55:51Z",
+      "end": "2026-11-09T03:55:51Z",
+      "exit": 0
+    },
+    {
+      "name": "git grep -n -E 'overflow|line-clamp|ellipsis' -- src/css/site.css",
+      "start": "2026-11-09T03:55:51Z",
+      "end": "2026-11-09T03:55:51Z",
+      "exit": 0
+    },
+    {
+      "name": "(cd /tmp/xgr-base-build && npx eleventy) && semantic html compare",
+      "start": "2026-11-09T03:55:52Z",
+      "end": "2026-11-09T03:55:53Z",
+      "exit": 0
+    }
+  ],
+  "ci": "未验证",
+  "files": [
+    {
+      "path": "evidence/en-xgr/REPORT.md",
+      "sha256": "2dda5a8bb2de7789bb37be26018e87ecf6dc55e0ed5a12ebeb210df3ce45986d",
+      "bytes": 4718
+    },
+    {
+      "path": "evidence/en-xgr/build-ui-scan.csv",
+      "sha256": "13502fb6186f0a2af803b4f539684a6019fa4d7349ca6a08d7b0b16474dbf523",
+      "bytes": 134
+    },
+    {
+      "path": "evidence/en-xgr/commands.txt",
+      "sha256": "aa6eee2de0d531c7b5d6cf49dc0f9d23cc2f98b190a5cfad79c29b8b6bdb7d21",
+      "bytes": 2039
+    },
+    {
+      "path": "evidence/en-xgr/content-whitelist.csv",
+      "sha256": "6003e086c69b8ba52d5277b7b65ac6122d76c9c49d793c864e7d00f4c61874ad",
+      "bytes": 3980
+    },
+    {
+      "path": "evidence/en-xgr/content-whitelist.md",
+      "sha256": "0ac35668a6be1fde0db1cf239d4c25e9a0a8354b2d637a3a820c15df7f4f5f65",
+      "bytes": 1829
+    },
+    {
+      "path": "evidence/en-xgr/npm-test.txt",
+      "sha256": "7d4366a09b805f2e6d32432c02bbcc985c498877eebbc70be913e1da0ad1f43d",
+      "bytes": 10739
+    },
+    {
+      "path": "evidence/en-xgr/semantic-html.txt",
+      "sha256": "f1a857d02c6c587e9932a5e4bc408b5b3dc4956c6d53aab67b3771f8bc06bdbe",
+      "bytes": 2510
+    },
+    {
+      "path": "evidence/en-xgr/ui-inventory.csv",
+      "sha256": "23cb0d56fcf981b3937df092c98361cfeab45719b0d3a1c689352b776ae351b2",
+      "bytes": 2735
+    },
+    {
+      "path": "evidence/en-xgr/ui-inventory.md",
+      "sha256": "524a93e5973596631d88a0298fe32b6b94e491de8d1315d3b2fcb585dd9250bc",
+      "bytes": 2059
+    }
+  ]
+}

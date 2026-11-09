@@ -1,0 +1,56 @@
+tested_head=f156a58016c3340adb7f1a45d79558cec78e77de
+base_sha=5f9567a33aba75a83ae345feb6af4b600c093d77
+brief_sha256=6a95006c3cdc69965d0c7e001f729d1e6707721fa6535ca0ba91ef4ffdc65555
+chrome=/usr/bin/google-chrome
+note=npm test launched the existing Playwright harness in test/build.test.js. No eleventy --serve, no public preview, no extra browser session outside that test.
+
+1	npm test
+	start=2026-11-09T03:55:44Z
+	end=2026-11-09T03:55:51Z
+	elapsed_s=7
+	exit=0
+	log=npm-test.txt
+	result=47 pass / 0 fail
+	runtime=EN_UI_RUNTIME status=ran (8 rows, maxOver=0)
+
+2	BASE_SHA=5f9567a33aba75a83ae345feb6af4b600c093d77 node scripts/en-ui-inventory.js
+	start=2026-11-09T03:55:51Z
+	end=2026-11-09T03:55:51Z
+	elapsed_s=0
+	exit=0
+	stdout_head=f156a58016c3340adb7f1a45d79558cec78e77de
+	scanFail=0 semanticFail=0 templateHanFiles=[]
+
+3	BASE_SHA=5f9567a33aba75a83ae345feb6af4b600c093d77 OUT_DIR=/tmp/en-xgr-out node scripts/en-ui-inventory.js
+	start=2026-11-09T03:56:40Z
+	end=2026-11-09T03:56:40Z
+	elapsed_s=0
+	exit=0
+	note=same HEAD; CSV byte-identical to ui-inventory.csv, content-whitelist.csv, build-ui-scan.csv
+
+4	git diff --exit-code 5f9567a33aba75a83ae345feb6af4b600c093d77 -- content src/lib/render.js src/lib/posts.js src/css/site.css site.config.js
+	start=2026-11-09T03:55:51Z
+	end=2026-11-09T03:55:51Z
+	elapsed_s=0
+	exit=0
+	result=empty diff
+
+5	git grep -n -E 'overflow|line-clamp|ellipsis' -- src/css/site.css
+	start=2026-11-09T03:55:51Z
+	end=2026-11-09T03:55:51Z
+	elapsed_s=0
+	exit=0
+	result=pre-existing rules only; this commit does not change src/css/site.css
+
+6	git worktree add --detach /tmp/xgr-base-build 5f9567a33aba75a83ae345feb6af4b600c093d77
+	&& (cd /tmp/xgr-base-build && npx eleventy)
+	start=2026-11-09T03:55:52Z
+	end=2026-11-09T03:55:53Z
+	elapsed_s=1
+	exit=0
+	then=node semantic compare of visible h1 / summary-en / summary-zh / original-body / title / original_url / status_id
+	semantic_exit=0
+	log=semantic-html.txt
+	cleanup=git worktree remove --force /tmp/xgr-base-build
+
+CI	not run in this session	exit=n/a	result=未验证

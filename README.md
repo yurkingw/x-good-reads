@@ -2,7 +2,7 @@
 
 Turn one X post into a readable static HTML page, then send that page URL to a friend. `content/` in this repository is the only content source. The site publishes only to **GitHub Pages** (a project site).
 
-Page order is fixed: the post title, then source (author, handle, time, link to the original post), then the AI summary, then the original text, then the footer notice. The summary opens in English. When both an English summary (`summary` or `summary_en`) and `summary_zh` are stored, EN / 中文 switches to Chinese.
+Page order is fixed: the post title, then source (author, handle, time, link to the original post), then the AI summary, then the original text, then the footer notice. The summary opens in English. When both an English summary (`summary` or `summary_en`) and `summary_zh` are stored, English / Chinese switches to the Chinese summary.
 
 ## URLs
 
