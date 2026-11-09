@@ -819,6 +819,12 @@ main {
     right: calc(var(--s-3) + env(safe-area-inset-right, 0px));
     bottom: calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
   }
+
+  /* Side lane so body text stays left of the fixed Top box and its focus ring. Header stays full width: the button is below the header once it is visible. */
+  main,
+  .notice {
+    padding-inline-end: calc(var(--s-3) + 46px + 2px + var(--s-1) + var(--s-1) + env(safe-area-inset-right, 0px));
+  }
 }
 
 @keyframes sheet-in {

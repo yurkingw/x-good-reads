@@ -468,8 +468,10 @@ async function assertCraftOptics(page, homeUrl, postUrl) {
   assert.equal(narrow.metaTop, 12);
   assert.equal(narrow.summaryPad, 24);
   assert.equal(narrow.originalGap, 32);
+  assert.ok(Math.abs(narrow.left.top - narrow.left.h1) <= 1, JSON.stringify(narrow.left));
+  const lane = narrow.right.top - narrow.right.h1;
+  assert.ok(Math.abs(lane - 52) <= 1, `375 text lane ${lane}`);
   for (const edge of [narrow.left, narrow.right]) {
-    assert.ok(Math.abs(edge.top - edge.h1) <= 1, JSON.stringify(edge));
     const summaryInset = Math.abs(edge.summary - edge.h1);
     assert.ok(summaryInset >= 15.5 && summaryInset <= 17.5, JSON.stringify(edge));
     assert.ok(Math.abs(edge.original - edge.h1) <= 1, JSON.stringify(edge));
