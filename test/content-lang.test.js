@@ -24,3 +24,16 @@ test("residual UI scan ignores Chinese blocks tagged zh-CN", () => {
   assert.equal(residualHan(html), "");
   assert.match(residualHan("<p>回顶</p>"), /回顶/);
 });
+
+test("residual UI scan ignores a Chinese post title copied into the document title", () => {
+  const html = [
+    "<title>谁在倒黄 · X Good Reads</title>",
+    '<meta property="og:title" content="谁在倒黄">',
+    '<meta name="twitter:title" content="谁在倒黄">',
+    '<meta name="description" content="English description">',
+    "<p>Home</p>"
+  ].join("");
+  assert.equal(residualHan(html), "");
+  assert.match(residualHan(`${html}<p>回顶</p>`), /回顶/);
+  assert.match(residualHan('<meta name="description" content="回顶">'), /回顶/);
+});

@@ -63,8 +63,18 @@ export function stripLangElements(html, lang) {
 
 const HAN = /[\u4e00-\u9fff]/;
 
+// Document and share titles echo the post title. A Chinese article title is content,
+// not interface chrome. Void meta tags cannot be dropped by the lang stripper.
+function stripContentTitles(html) {
+  return String(html)
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, "")
+    .replace(/<meta\b[^>]*>/gi, (tag) => (
+      /\b(?:property|name)="(?:og:title|twitter:title)"/.test(tag) ? "" : tag
+    ));
+}
+
 export function residualHan(html) {
-  const stripped = stripLangElements(html, "zh-CN");
+  const stripped = stripLangElements(stripContentTitles(html), "zh-CN");
   const hit = HAN.exec(stripped);
   if (!hit) return "";
   const from = Math.max(0, hit.index - 48);
